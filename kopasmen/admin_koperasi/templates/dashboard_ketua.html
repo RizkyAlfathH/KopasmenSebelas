@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Ketua</title>
+</head>
+<body>
+
+  <table border="1" width="100%" cellpadding="5">
+    <tr>
+      <td><a href="{% url 'dashboard' %}">Dashboard</a></td>
+      <td><a href="{% url 'kelola_akun' %}">Manajemen Aggota</a></td>
+      <td><a href="{% url 'logout' %}">Logout</a></td>
+    </tr>
+  </table>
+
+  <h1>Dashboard Ketua</h1>
+  <p>Halo {{ username }} ({{ role }})</p>
+
+</body>
+</html>

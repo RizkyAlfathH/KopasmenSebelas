@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Anggota</title>
+</head>
+<body>
+    <h1>{{ judul }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Simpan</button>
+        <a href="{% url 'kelola_akun' %}">Batal</a>
+    </form>
+</body>
+</html>

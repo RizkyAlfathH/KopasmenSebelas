@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Admin Kopasmen</title>
+</head>
+<body>
+
+    {% if messages %}
+        <ul>
+        {% for m in messages %}
+            <li>{{ m }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="id_username">Username:</label><br>
+        {{ form.username }}<br><br>
+
+        <label for="id_password">Password:</label><br>
+        {{ form.password }}<br><br>
+
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>

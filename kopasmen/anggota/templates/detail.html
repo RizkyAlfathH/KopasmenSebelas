@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Detail Anggota</title>
+</head>
+<body>
+  <h1>Detail Anggota</h1>
+  <h2>{{ anggota.nama }}</h2>
+  <table border="1" cellpadding="6">
+    <tr>
+      <th>ID Anggota</th>
+      <td>{{ anggota.id_anggota }}</td>
+    </tr>
+    <tr>
+      <th>NIP</th>
+      <td>{{ anggota.nip }}</td>
+    </tr>
+    <tr>
+      <th>Nama</th>
+      <td>{{ anggota.nama }}</td>
+    </tr>
+    <tr>
+      <th>Alamat</th>
+      <td>{{ anggota.alamat }}</td>
+    </tr>
+    <tr>
+      <th>No HP</th>
+      <td>{{ anggota.no_hp }}</td>
+    </tr>
+    <tr>
+      <th>Email</th>
+      <td>{{ anggota.email }}</td>
+    </tr>
+    <tr>
+      <th>Jenis Kelamin</th>
+      <td>{{ anggota.get_jenis_kelamin_display }}</td>
+    </tr>
+    <tr>
+      <th>Tanggal Daftar</th>
+      <td>{{ anggota.tgl_daftar|date:"d-m-Y" }}</td>
+    </tr>
+    <tr>
+      <th>Status</th>
+      <td>{{ anggota.get_status_display }}</td>
+    </tr>
+  </table>
+
+  <p><a href="{% url 'anggota_list' %}">Kembali ke Daftar Anggota</a></p> 
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Akun</title>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            
+            <ul class="nav-menu">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></a></li>
+                <li><a href="{% url 'kelola_akun' %}">Manajemen Aggota</a></li>
+            </ul>
+            
+            <div class="logout">
+                <a href="{% url 'logout' %}">Logout</a>
+            </div>
+        </aside>
+            
+            <h1>Manajemen Anggota</h1>
+
+            <div class="content">
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Daftar Admin</h2>
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <div class="search-box">
+                                <input type="text" placeholder="Cari Nama Admin...">
+                            </div>
+                            <a href="{% url 'tambah_admin' %}" class="add-button">+ Tambah Admin</a>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for admin in admins %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ admin.username }}</td>
+                                    <td>{{ admin.role }}</td>
+                                    <td class="action-links">
+                                        <a href="{% url 'edit_admin' admin.id_admin %}" class="btn btn-edit">Edit</a>
+                                        <a href="{% url 'hapus_admin' admin.id_admin %}" class="btn btn-delete" onclick="return confirm('Yakin ingin menghapus admin ini?');">Hapus</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="empty-state">Tidak ada data admin</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Daftar Anggota</h2>
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <div class="search-box">
+                                <input type="text" placeholder="Cari Nama Anggota...">
+                            </div>
+                            <a href="{% url 'tambah_anggota' %}" class="add-button">+ Tambah Anggota</a>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>NIP</th>
+                                    <th>Nama</th>
+                                    <th>Alamat</th>
+                                    <th>No Tlp</th>
+                                    <th>Email</th>
+                                    <th>Jenis Kelamin</th>
+                                    <th>Tanggal Daftar</th>
+                                    <th>Status</th>
+                                    <th>Alasan Tidak Aktif</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for anggota in anggotas %}
+                                <tr>
+                                    <td>{{ anggota.id_anggota }}</td>
+                                    <td>{{ anggota.nip }}</td>
+                                    <td>{{ anggota.nama }}</td>
+                                    <td>{{ anggota.alamat }}</td>
+                                    <td>{{ anggota.no_tlp }}</td>
+                                    <td>{{ anggota.email }}</td>
+                                    <td>{{ anggota.jenis_kelamin }}</td>
+                                    <td>{{ anggota.tgl_daftar|date:"d M Y" }}</td>
+                                    <td>{{ anggota.status }}</td>
+                                    <td>{{ anggota.alasan_tidak_aktif }}</td>
+                                    <td class="action-links">
+                                        <a href="{% url 'detail_anggota' anggota.id_anggota %}" class="btn btn-view">Lihat</a>
+                                        <a href="{% url 'edit_anggota' anggota.id_anggota %}" class="btn btn-edit">Edit</a>
+                                        <a href="{% url 'hapus_anggota' anggota.id_anggota %}" class="btn btn-delete" onclick="return confirm('Yakin ingin menghapus anggota ini?');">Hapus</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="empty-state">Tidak ada data anggota</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
