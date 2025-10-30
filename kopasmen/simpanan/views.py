@@ -14,7 +14,9 @@ from django.utils.dateparse import parse_date
 from django.http import HttpResponse
 from reportlab.lib.pagesizes import A4
 from django.template.loader import get_template
-from xhtml2pdf import pisa
+from weasyprint import HTML
+from django.template.loader import render_to_string
+from django.http import HttpResponse
 import os
 from django.conf import settings
 from reportlab.lib.units import cm
