@@ -89,9 +89,9 @@ WSGI_APPLICATION = 'kopasmen.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'kopasmen',
-        'USER': 'root',
-        'PASSWORD': '',  
+        'NAME': 'IDN2306510553_kopasmen11',
+        'USER': 'IDN2306510553_kopasmen11',
+        'PASSWORD': 'Kopasmen11_user',  
         'HOST': 'localhost',
         'PORT': '3306',
     }
