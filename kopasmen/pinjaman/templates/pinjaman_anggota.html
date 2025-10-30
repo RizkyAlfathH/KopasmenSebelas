@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Pinjaman {{ anggota.nama }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        h1, h2 {
+            margin-bottom: 20px;
+            color: #4A2C2A;
+            font-weight: 600;
+        }
+
+        /* Tombol utama */
+        .btn-bayar {
+            background: #FFD700;
+            color: #333;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-block;
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+        }
+
+        .btn-bayar:hover {
+            background: #e6c200;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Tombol kembali */
+        .btn-back-container {
+            text-align: right;
+            margin-top: 25px;
+        }
+
+        .btn-back {
+            display: inline-block;
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid #FFD700;
+            background: #FFD700;
+            color: #333;
+            font-weight: bold;
+            text-decoration: none;   /* biar ga ada garis bawah */
+            transition: 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #e6c200;
+            color: #222;
+            text-decoration: none;   /* pastiin hover juga ga muncul underline */
+        }
+
+
+
+        /* Tabel */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: center;
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #FFD700;
+            color: #333;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) { background: #fafafa; }
+        tr:nth-child(odd) { background: #fffefc; }
+
+        .action-links a {
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            color: white;
+            background: #007bff;
+            transition: 0.2s;
+        }
+
+        .action-links a:hover { opacity: 0.9; }
+
+        .empty-state {
+            text-align: center;
+            font-style: italic;
+            color: #999;
+        }
+
+        /* Modal overlay */
+        #bayarModal {
+            display: none;
+            position: fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background: rgba(0,0,0,0.4);
+            justify-content:center;
+            align-items:center;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #bayarModal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        #bayarModal .modal-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            min-width: 350px;
+            max-width: 450px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        #bayarModal.active .modal-card {
+            transform: translateY(0);
+        }
+
+        #bayarModal h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #4A2C2A;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        #listPinjaman {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #listPinjaman li {
+            margin-bottom: 12px;
+        }
+
+        #listPinjaman li a {
+            display: block;
+            background: #FFD700;
+            color: #333;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        #listPinjaman li a:hover {
+            background: #e6c200;
+            transform: translateY(-2px);
+        }
+
+        #bayarModal button.close-btn {
+            margin-top: 20px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #FFD700;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            transition: all 0.2s ease;
+        }
+
+        #bayarModal button.close-btn:hover {
+            background: #e6c200;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    {% include "partials/sidebar.html" %}
+
+    <div class="main-content">
+        <!-- Pinjaman Aktif -->
+        <div class="content-card">
+            <h1>Pinjaman Aktif {{ anggota.nama }} ({{ anggota.nomor_anggota }})</h1>
+
+            <button class="btn-bayar" onclick="openBayarModal({{ all_pinjaman_list|safe }})">Bayar</button>
+
+            <div id="bayarModal">
+                <div class="modal-card">
+                    <h3>Pilih Pinjaman untuk Dibayar</h3>
+                    <ul id="listPinjaman"></ul>
+                    <button class="close-btn" onclick="closeBayarModal()">Tutup</button>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tanggal Pinjam</th>
+                        <th>Jenis</th>
+                        <th>Jumlah Pinjaman</th>
+                        <th>Jumlah Cicilan</th>
+                        <th>Persentase Jasa</th>
+                        <th>Jumlah Jasa</th>
+                        <th>Total (Cicilan + Jasa)</th>
+                        <th>Sisa Pinjaman</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nomor_anggota, data in anggota_data.items %}
+                        {% if data.pinjaman_reguler_awal == 0 and data.pinjaman_khusus_awal == 0 and data.pinjaman_barang_awal == 0 %}
+                            <tr>
+                                <td colspan="10" class="empty-state">Belum ada pinjaman aktif</td>
+                            </tr>
+                        {% else %}
+                            {% if data.pinjaman_reguler_awal and data.status_reguler != "Lunas" %}
+                                <tr>
+                                    <td>{{ data.tanggal_meminjam|date:"d M Y" }}</td>
+                                    <td>Reguler</td>
+                                    <td>Rp. {{ data.pinjaman_reguler_awal|floatformat:"-2" }}</td>
+                                    <td>Rp. {{ data.angsuran_reguler|floatformat:"-2" }}</td>
+                                    <td>{{ data.jasa_persen_reguler|floatformat:"-2" }}%</td>
+                                    <td>Rp. {{ data.jasa_reguler|floatformat:"-2" }}</td>
+                                    <td>Rp. {{ data.total_reguler|floatformat:"-2" }}</td>
+                                    <td>Rp. {{ data.sisa_reguler|floatformat:"-2" }}</td>
+                                    <td>{{ data.status_reguler|default_if_none:"-" }}</td>
+                                    <td class="action-links">
+                                        {% if data.pinjaman_reguler_id %}
+                                            <a href="{% url 'detail_pinjaman' data.pinjaman_reguler_id %}">Detail</a>
+                                        {% else %}<span>-</span>{% endif %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            {% if data.pinjaman_khusus_awal and data.status_khusus != "Lunas" %}
+                                <tr>
+                                    <td>{{ data.tanggal_meminjam|date:"d M Y" }}</td>
+                                    <td>Khusus</td>
+                                    <td>Rp. {{ data.pinjaman_khusus_awal|floatformat:"-2" }}</td>
+                                    <td>Rp. {{ data.angsuran_khusus|floatformat:"-2" }}</td>
+                                    <td>{{ data.jasa_persen_khusus|floatformat:"-2" }}%</td>
+                                    <td>Rp. {{ data.jasa_khusus|floatformat:"-2" }}</td>
+                                    <td>Rp. {{ data.total_khusus|floatformat:"-2" }}</td>
+                                    <td>Rp. {{ data.sisa_khusus|floatformat:"-2" }}</td>
+                                    <td>{{ data.status_khusus|default_if_none:"-" }}</td>
+                                    <td class="action-links">
+                                        {% if data.pinjaman_khusus_id %}
+                                            <a href="{% url 'detail_pinjaman' data.pinjaman_khusus_id %}">Detail</a>
+                                        {% else %}<span>-</span>{% endif %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            {% if data.pinjaman_barang_awal and data.status_barang != "Lunas" %}
+                                <tr>
+                                    <td>{{ data.tanggal_meminjam|date:"d M Y" }}</td>
+                                    <td>Barang</td>
+                                    <td>Rp. {{ data.pinjaman_barang_awal|floatformat:"-2" }}</td>
+                                    <td>Rp. {{ data.angsuran_barang|floatformat:"-2" }}</td>
+                                    <td>{{ data.jasa_persen_barang|floatformat:"-2" }}%</td>
+                                    <td>Rp. {{ data.jasa_barang|floatformat:"-2" }}</td>
+                                    <td>Rp. {{ data.total_barang|floatformat:"-2" }}</td>
+                                    <td>Rp. {{ data.sisa_barang|floatformat:"-2" }}</td>
+                                    <td>{{ data.status_barang|default_if_none:"-" }}</td>
+                                    <td class="action-links">
+                                        {% if data.pinjaman_barang_id %}
+                                            <a href="{% url 'detail_pinjaman' data.pinjaman_barang_id %}">Detail</a>
+                                        {% else %}<span>-</span>{% endif %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endif %}
+                    {% empty %}
+                        <tr>
+                            <td colspan="10" class="empty-state">Belum ada pinjaman aktif</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Riwayat Pinjaman -->
+        <div class="content-card">
+            <h2>Riwayat Pinjaman</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tanggal Pinjam</th>
+                        <th>Jenis</th>
+                        <th>Jumlah Pinjaman</th>
+                        <th>Jumlah Cicilan</th>
+                        <th>Persentase Jasa</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pin in riwayat_pinjaman %}
+                        <tr>
+                            <td>{{ pin.tanggal_meminjam|date:"d M Y" }}</td>
+                            <td>{{ pin.jenis }}</td>
+                            <td>Rp. {{ pin.jumlah_pinjaman|floatformat:"-2" }}</td>
+                            <td>Rp. {{ pin.angsuran|floatformat:"-2" }}</td>
+                            <td>{{ pin.jasa_persen|floatformat:"-2" }}%</td>
+                            <td>{{ pin.status }}</td>
+                            <td class="action-links">
+                                <a href="{% url 'detail_pinjaman' pin.id %}">Detail</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9" class="empty-state">Belum ada riwayat pinjaman</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tombol kembali bawah kanan -->
+        <div class="btn-back-container">
+            <a href="{% url 'pinjaman_list' %}" class="btn-back">&larr; Kembali</a>
+        </div>
+
+    </div>
+
+    <script>
+        function openBayarModal(pinjamanList) {
+            let modal = document.getElementById("bayarModal");
+            let list = document.getElementById("listPinjaman");
+            list.innerHTML = "";
+
+            if (!pinjamanList || pinjamanList.length === 0) {
+                list.innerHTML = "<li>Tidak ada pinjaman aktif</li>";
+            } else {
+                pinjamanList.forEach(p => {
+                    list.innerHTML += `<li><a href="/pinjaman/bayar/${p.id}/">Pinjaman ${p.jenis}</a></li>`;
+                });
+            }
+
+            modal.classList.add("active");
+        }
+
+        function closeBayarModal() {
+            let modal = document.getElementById("bayarModal");
+            modal.classList.remove("active");
+        }
+    </script>
+</body>
+</html>

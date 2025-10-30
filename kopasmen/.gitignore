@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Virtual environment
+venv/
+env/
+.venv/
+.env/
+
+# Django stuff
+*.log
+media/
+staticfiles/
+
+# VS Code / JetBrains
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Migrations (opsional, kalau mau reset repo)
+*/migrations/__pycache__/

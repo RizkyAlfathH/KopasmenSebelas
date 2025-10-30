@@ -3,19 +3,277 @@
 <head>
   <meta charset="UTF-8">
   <title>Dashboard Ketua</title>
+  <style>
+    * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #333;
+  min-height: 100vh;
+}
+
+.main-content {
+  margin-left: 280px;
+  margin-top: 60px;
+  padding: 25px;
+  flex: 1;
+  min-height: calc(100vh - 60px);
+}
+
+.content-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  margin-bottom: 25px;
+  border: 1px solid #eee;
+}
+
+.content-card h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #4A2C2A;
+  border-left: 5px solid #FFD700;
+  padding-left: 15px;
+}
+
+.content-card h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  color: #4A2C2A;
+  text-align: center;
+  border-bottom: 2px solid #f1f1f1;
+  padding-bottom: 8px;
+}
+
+/* Cards Dashboard */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border-top: 4px solid #FFD700;
+}
+
+.card-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header span {
+  font-size: 18px;
+}
+
+.card-body {
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+  text-align: center;
+}
+
+/* Charts */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+.chart-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  border: 1px solid #eee;
+}
+
+canvas {
+  max-width: 100%;
+  height: 260px !important;
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 18px;
+  }
+
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .content-card {
+    padding: 18px;
+  }
+
+  .content-card h1 {
+    font-size: 22px;
+  }
+
+  .card-body {
+    font-size: 18px;
+  }
+
+  canvas {
+    height: 200px !important;
+  }
+}
+
+
+  </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <table border="1" width="100%" cellpadding="5">
-    <tr>
-      <td><a href="{% url 'dashboard' %}">Dashboard</a></td>
-      <td><a href="{% url 'kelola_akun' %}">Manajemen Aggota</a></td>
-      <td><a href="{% url 'logout' %}">Logout</a></td>
-    </tr>
-  </table>
+  {% include "partials/sidebar.html" %}
 
-  <h1>Dashboard Ketua</h1>
-  <p>Halo {{ username }} ({{ role }})</p>
+  <div class="main-content">
+    <div class="content-card">
+      <h1>Dashboard Ketua</h1>
+
+      <!-- Cards -->
+      <div class="dashboard-cards">
+        <div class="card">
+          <div class="card-header">JUMLAH ADMIN <span><i class="fas fa-user-tie"></i></span></div>
+          <div class="card-body">{{ jumlah_admin }}</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">JUMLAH ANGGOTA <span><i class="fas fa-users"></i></span></div>
+          <div class="card-body">{{ jumlah_anggota }}</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">JUMLAH SIMPANAN <span><i class="fas fa-piggy-bank"></i></span></div>
+          <div class="card-body">Rp {{ jumlah_simpanan|floatformat:0 }}</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">JUMLAH PINJAMAN <span><i class="fas fa-hand-holding-usd"></i></span></div>
+          <div class="card-body">Rp {{ jumlah_pinjaman|floatformat:0 }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grafik Section -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h2>Simpanan Bulanan</h2>
+        <div class="chart-container">
+          <canvas id="simpananChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h2>Pinjaman Bulanan</h2>
+        <div class="chart-container">
+          <canvas id="pinjamanChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // Data dari Django context
+  const bulan = {{ bulan_labels|safe }};
+  const simpanan = {{ simpanan_data|safe }};
+  const pinjaman = {{ pinjaman_data|safe }};
+
+  // Chart Simpanan
+  new Chart(document.getElementById('simpananChart'), {
+    type: 'line',
+    data: {
+      labels: bulan,
+      datasets: [{
+        label: "Simpanan",
+        data: simpanan,
+        borderColor: "green",
+        backgroundColor: "rgba(0,128,0,0.2)",
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1000000, // ubah ke 500000 kalau mau lebih detail
+            callback: function(value) {
+              return 'Rp ' + value.toLocaleString(); // format angka Rupiah
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Chart Pinjaman
+  new Chart(document.getElementById('pinjamanChart'), {
+    type: 'line',
+    data: {
+      labels: bulan,
+      datasets: [{
+        label: "Pinjaman",
+        data: pinjaman,
+        borderColor: "red",
+        backgroundColor: "rgba(255,0,0,0.2)",
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1000000, // atau 500000
+            callback: function(value) {
+              return 'Rp ' + value.toLocaleString();
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
 
 </body>
 </html>

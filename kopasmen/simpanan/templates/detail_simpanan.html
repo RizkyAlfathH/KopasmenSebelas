@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Detail Simpanan {{ simpanan.anggota.nama }}</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      display: flex;
+    }
+    .main-content {
+      margin-left: 280px;
+      padding: 30px;
+      flex: 1;
+    }
+    .content-card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+      margin-bottom: 30px;
+    }
+    h1, h2 { margin-bottom: 20px; color: #4A2C2A; }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px 30px;
+      margin-bottom: 20px;
+    }
+    .detail-item {
+      background: #fafafa;
+      border-radius: 8px;
+      padding: 15px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .detail-item .label {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .detail-item .value {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+    }
+    .detail-item.highlight {
+      background: #fff8e1;
+      border: 1px solid #ffd54f;
+    }
+    .back-btn {
+      display: inline-block; margin-top: 20px;
+      background: #FFD700; padding: 8px 14px;
+      border-radius: 6px; text-decoration: none;
+      color: #333; font-weight: bold;
+    }
+    .back-btn:hover { background: #e6c200; }
+
+    /* Search input */
+    .filter-box {
+      display: flex; gap: 10px; margin-bottom: 15px;
+    }
+    .filter-box input {
+      padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;
+    }
+
+    .transaction-list {
+      list-style: none; padding: 0; margin: 0;
+    }
+    .transaction-item {
+      padding: 12px 15px; background: #fafafa; margin-bottom: 8px;
+      border-radius: 6px; display: flex; justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .transaction-item span { display: inline-block; width: 30%; text-align: center; }
+    .empty-state { text-align: center; font-style: italic; color: #999; }
+  </style>
+</head>
+<body>
+  {% include "partials/sidebar.html" %}
+
+  <div class="main-content">
+    <!-- Detail Simpanan -->
+    <div class="content-card">
+      <h1>Detail Simpanan</h1>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="label">Nomor Anggota</div>
+          <div class="value">{{ simpanan.anggota.nomor_anggota }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="label">Nama Anggota</div>
+          <div class="value">{{ simpanan.anggota.nama }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="label">Jenis Simpanan</div>
+          <div class="value">{{ simpanan.jenis_simpanan }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="label">Tanggal Membuat Tabungan</div>
+            <div class="value">
+              {% if simpanan.anggota.tanggal_daftar %}
+                {{ simpanan.anggota.tanggal_daftar|date:"d M Y" }}
+              {% else %}
+                -
+              {% endif %}
+            </div>
+          </div>
+        <div class="detail-item">
+          <div class="label">Saldo {{ simpanan.jenis_simpanan }}</div>
+          <div class="value">Rp {{ saldo_jenis|floatformat:0 }}</div>
+        </div>
+      </div>
+      <a href="{% url 'simpanan_anggota' simpanan.anggota.nomor_anggota %}" class="back-btn">← Kembali</a>
+    </div>
+
+    <!-- Riwayat Transaksi dengan search per tanggal -->
+    <div class="content-card">
+      <h2>Riwayat Transaksi {{ simpanan.jenis_simpanan }}</h2>
+
+      <div class="filter-box">
+        <input type="date" id="filterTanggal" placeholder="Cari tanggal">
+      </div>
+
+      <ul class="transaction-list" id="transactionList">
+          {% for h in history %}
+          <li class="transaction-item" data-tanggal="{{ h.tgl|date:'Y-m-d' }}">
+            <span>{{ h.tgl|date:"d M Y" }}</span>
+            <span>{{ h.jenis_trans }}</span>
+            <span>Rp {{ h.jumlah|floatformat:0 }}</span>
+            <span>
+              <a href="{% url 'detail_transaksi' h.pk %}">Detail</a>|
+              <a href="{% url 'download_kwitansi' h.tipe h.pk %}" class="btn btn-sm btn-primary">
+                  Cetak Kwitansi
+              </a>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+    </div>
+  </div>
+
+  <script>
+    const filterTanggal = document.getElementById("filterTanggal");
+    const transactionList = document.getElementById("transactionList");
+    const items = Array.from(transactionList.getElementsByClassName("transaction-item"));
+
+    function filterTransactions() {
+      const tanggalVal = filterTanggal.value;
+      let visibleCount = 0;
+
+      items.forEach(item => {
+        const itemTanggal = item.dataset.tanggal;
+        const show = !tanggalVal || itemTanggal === tanggalVal;
+        item.style.display = show ? "flex" : "none";
+        if (show) visibleCount++;
+      });
+
+      // Tampilkan empty-state kalau tidak ada yang match
+      let empty = document.querySelector(".empty-state");
+      if (visibleCount === 0) {
+        if (!empty) {
+          const li = document.createElement("li");
+          li.className = "empty-state";
+          li.textContent = "Tidak ada transaksi yang sesuai filter.";
+          transactionList.appendChild(li);
+        }
+      } else {
+        if (empty) empty.remove();
+      }
+    }
+
+    filterTanggal.addEventListener("change", filterTransactions);
+  </script>
+</body>
+</html>

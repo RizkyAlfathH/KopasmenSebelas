@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Pinjaman</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      display: flex;
+      margin: 0;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+      padding: 20px 0;
+      position: fixed;
+      height: 100vh;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 260px;
+      padding: 30px;
+      flex: 1;
+    }
+
+    h1 {
+      color: #4A2C2A;
+      font-size: 26px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #4A2C2A;
+      font-size: 22px;
+      margin: 20px 0 15px;
+    }
+
+    /* Tombol kembali */
+    .btn-back-container {
+      text-align: right;
+      margin-top: 25px;
+    }
+    .btn-back {
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: 1px solid #FFD700;
+      background: #FFD700;
+      color: #333;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    .btn-back:hover {
+      background: #e6c200;
+      color: #222;
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    }
+
+    .row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    .col {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #4A2C2A;
+    }
+
+    input[readonly] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #fffefc;
+      font-size: 14px;
+    }
+
+    .status-lunas { color: #28a745; font-weight: bold; }
+    .status-belum { color: #dc3545; font-weight: bold; }
+
+    /* Riwayat Angsuran */
+    .angsuran-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fffefc;
+      border: 1px solid #ddd;
+      padding: 14px 18px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+
+    .angsuran-info i {
+      font-style: normal;
+      font-weight: bold;
+      margin-right: 8px;
+      color: #28a745;
+    }
+
+    .angsuran-info .text-danger { color: #dc3545; }
+
+    .angsuran-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .angsuran-actions a {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #FFD700;
+      background: transparent;
+      color: #4A2C2A;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .angsuran-actions a:hover {
+      background: #FFD700;
+      color: #333;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 20px;
+    }
+    .pagination a, .pagination span {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      color: #4A2C2A;
+    }
+    .pagination a:hover { background: #f0d400; }
+    .pagination span.current {
+      font-weight: bold;
+      background: #FFD700;
+      border-color: #e6c200;
+    }
+
+    /* Search Form */
+    form.search-form {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    form.search-form input[type="date"] {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    form.search-form button {
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: #FFD700;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    form.search-form a {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    /* Kosong */
+    .no-data {
+      text-align: center;
+      padding: 20px;
+      color: #777;
+      font-style: italic;
+    }
+
+    /* Responsive */
+    @media(max-width:768px){
+      .row { flex-direction: column; }
+      .angsuran-card { flex-direction: column; align-items: flex-start; }
+      .angsuran-actions { margin-top: 8px; }
+      .btn-back-container { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    {% include "partials/sidebar.html" %}
+  </div>
+
+  <div class="main-content">
+    <h1>Detail Pinjaman</h1>
+
+    <!-- Informasi Pinjaman -->
+    <div class="card">
+      <div class="row">
+        <div class="col">
+          <label>Nomor Anggota:</label>
+          <input type="text" readonly value="{{ nomor_anggota }}">
+        </div>
+        <div class="col">
+          <label>Nama Anggota:</label>
+          <input type="text" readonly value="{{ nama_anggota }}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Tanggal Pinjam:</label>
+          <input type="text" readonly value="{{ tanggal_pinjam|date:'d M Y' }}">
+        </div>
+        <div class="col">
+          <label>Jenis Pinjaman:</label>
+          <input type="text" readonly value="{{ jenis_pinjaman }}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Jumlah Pokok Pinjaman:</label>
+          <input type="text" readonly value="Rp. {{ pinjaman.jumlah_pinjaman|floatformat:'-2' }}">
+        </div>
+        <div class="col">
+          <label>Jumlah Cicilan:</label>
+          <input type="text" readonly value="Rp. {{ pinjaman.angsuran_per_bulan|floatformat:'-2' }}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Kategori Jasa:</label>
+          <input type="text" readonly value="{{ kategori_pinjaman }}">
+        </div>
+        <div class="col">
+          <label>Persentase Jasa:</label>
+          <input type="text" readonly value="{{ jasa_persen|floatformat:'-2' }} %">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Jumlah Jasa (Rp):</label>
+          <input type="text" readonly value="Rp. {{ jasa|floatformat:'-2' }}">
+        </div>
+        <div class="col">
+          <label>Total Bayar (Cicilan + Jasa):</label>
+          <input type="text" readonly value="Rp. {{ cicilan_total|floatformat:'-2' }}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Status:</label>
+          <input type="text" readonly class="{% if pinjaman.status == 'Lunas' %}status-lunas{% else %}status-belum{% endif %}" 
+                value="{% if pinjaman.status == 'Lunas' %}Lunas{% else %}Belum Lunas{% endif %}">
+        </div>
+      </div>
+    </div>
+
+    <!-- Riwayat Angsuran -->
+    <h2>Riwayat Pembayaran</h2>
+    <form method="GET" class="search-form">
+        <label for="search_date">Cari Tanggal:</label>
+        <input type="date" name="search_date" id="search_date" value="{{ request.GET.search_date }}">
+        <button type="submit">Cari</button>
+        {% if request.GET.search_date %}
+        <a href="{% url 'detail_pinjaman' pinjaman.id_pinjaman %}">Reset</a>
+        {% endif %}
+    </form>
+
+    {% if page_obj %}
+      {% for angsuran in page_obj %}
+        <div class="angsuran-card">
+          <div class="angsuran-info">
+            {% if angsuran.jumlah_bayar >= pinjaman.angsuran_per_bulan %}
+              <i>&#10003;</i>
+            {% else %}
+              <i class="text-danger">&#10007;</i>
+            {% endif %}
+            Pembayaran bulan {{ angsuran.tanggal_bayar|date:"F" }}<br>
+            <small>{{ angsuran.tanggal_bayar|date:"d M Y" }}</small>
+          </div>
+          <div class="angsuran-actions">
+            <strong>Rp. {{ angsuran.jumlah_bayar|floatformat:'-2' }}</strong>
+            <a href="{% url 'detail_pembayaran' angsuran.id_pembayaran %}">Detail</a>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="card no-data">
+        Belum ada riwayat pembayaran.
+      </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+      <div class="pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+        {% else %}<span>&laquo;</span>{% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="current">{{ num }}</span>
+          {% else %}
+            <a href="?page={{ num }}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+        {% else %}<span>&raquo;</span>{% endif %}
+      </div>
+    {% endif %}
+
+    <!-- Sisa Pinjaman -->
+    <div class="card">
+      <strong>Sisa Pinjaman:</strong> Rp. {{ sisa_pinjaman|floatformat:'-2' }}
+    </div>
+
+    <!-- Tombol kembali kanan bawah -->
+    <div class="btn-back-container">
+      <a href="{% url 'pinjaman_anggota_detail' nomor_anggota %}" class="btn-back">
+        &larr; Kembali
+      </a>
+    </div>
+
+  </div>
+</body>
+</html>

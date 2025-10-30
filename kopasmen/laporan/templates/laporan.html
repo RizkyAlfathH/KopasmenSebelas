@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Laporan Koperasi</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; margin: 0; display: flex; }
+  .sidebar { width: 280px; background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%); padding: 20px 0; position: fixed; height: 100vh; box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow-y: auto; }
+  .main-content { margin-left: 280px; padding: 30px; flex: 1; }
+  .content-card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 20px rgba(0,0,0,0.08); margin-bottom: 30px; }
+  h1, h2 { color: #4A2C2A; }
+  h1 { margin-bottom: 20px; }
+  h2 { margin-top: 40px; }
+  .filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter-form label { font-weight: bold; }
+  .filter-form select, .filter-form button { padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
+  .filter-form button { background: #FFD700; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+  .filter-form button:hover { background: #e6c200; }
+  .download-buttons { margin-bottom: 15px; display: flex; gap: 10px; }
+  .download-buttons a { padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; color: white; }
+  .btn-pdf { background: #D9534F; }
+  .btn-excel { background: #5CB85C; }
+  table { width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden; margin-top: 15px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+  th, td { padding: 12px 10px; text-align: center; font-size: 14px; border-bottom: 1px solid #eee; }
+  th { background: #FFD700; color: #333; font-weight: 600; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  tr:nth-child(odd) { background: #fffefc; }
+  tr:hover { background: #f0e68c; }
+  .empty-state { text-align: center; font-style: italic; color: #999; }
+</style>
+</head>
+<body>
+  {% include "partials/sidebar.html" %}
+
+  <div class="main-content">
+    <div class="content-card">
+      <h1>Laporan Koperasi</h1>
+
+      
+
+      <!-- Laporan Bulanan -->
+      <h2>Laporan Bulanan</h2>
+      <!-- DOWNLOAD BULANAN -->
+      <div class="download-buttons">
+        <a href="?bulan={{ bulan }}&tahun={{ tahun_bulan }}&export=pdf&period=bulan" class="btn-pdf">Download PDF Bulanan</a>
+        <a href="?bulan={{ bulan }}&tahun={{ tahun_bulan }}&export=excel&period=bulan" class="btn-excel">Download Excel Bulanan</a>
+      </div>
+      <form method="get" class="filter-form">
+        <label for="bulan">Bulan:</label>
+        <select name="bulan" id="bulan">
+          {% for b in bulan_list %}
+            <option value="{{ b }}" {% if b == bulan %}selected{% endif %}>{{ b }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="tahun">Tahun:</label>
+        <select name="tahun" id="tahun">
+          {% for t in tahun_range %}
+            <option value="{{ t }}" {% if t == tahun_bulan %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit">Tampilkan</button>
+      </form>
+      <p>Data tercatat sampai: <strong>{{ tanggal_akhir_bulan }}</strong></p>
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">No</th>
+            <th rowspan="2">Nama Anggota</th>
+            <th colspan="4">Simpanan</th>
+            <th colspan="4">Pinjaman (Pokok + Jasa)</th>
+          </tr>
+          <tr>
+            <th>Pokok</th>
+            <th>Wajib</th>
+            <th>Sukarela</th>
+            <th>Total</th>
+            <th>Reguler</th>
+            <th>Khusus</th>
+            <th>Barang</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in laporan_bulanan %}
+          <tr>
+            <td>{{ item.no }}</td>
+            <td>{{ item.nama }}</td>
+            <td>{{ item.simpanan.pokok|floatformat:0 }}</td>
+            <td>{{ item.simpanan.wajib|floatformat:0 }}</td>
+            <td>{{ item.simpanan.sukarela|floatformat:0 }}</td>
+            <td>{{ item.simpanan.total|floatformat:0 }}</td>
+            <td>{{ item.pinjaman.reguler|floatformat:0 }}</td>
+            <td>{{ item.pinjaman.khusus|floatformat:0 }}</td>
+            <td>{{ item.pinjaman.barang|floatformat:0 }}</td>
+            <td>{{ item.pinjaman.total|floatformat:0 }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="10" class="empty-state">Tidak ada data</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+  
+
+      <!-- Laporan Tahunan -->
+      <h2>Laporan Tahunan</h2>
+      <!-- DOWNLOAD TAHUNAN -->
+      <div class="download-buttons" style="margin-top:30px;">
+        <a href="?tahun={{ tahun_bulan }}&export=pdf&period=tahun" class="btn-pdf">Download PDF Tahunan</a>
+        <a href="?tahun={{ tahun_bulan }}&export=excel&period=tahun" class="btn-excel">Download Excel Tahunan</a>
+      </div>
+      <form method="get" class="filter-form">
+        <label for="tahun_tahunan">Tahun:</label>
+        <select name="tahun_tahunan" id="tahun_tahunan">
+          {% for t in tahun_range %}
+            <option value="{{ t }}" {% if t == tahun_tahunan %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit">Tampilkan</button>
+      </form>
+      <p>Data tercatat sampai: <strong>{{ tanggal_akhir_tahun }}</strong></p>
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">No</th>
+            <th rowspan="2">Nama Anggota</th>
+            <th colspan="4">Simpanan</th>
+            <th colspan="4">Pinjaman (Pokok + Jasa)</th>
+          </tr>
+          <tr>
+            <th>Pokok</th>
+            <th>Wajib</th>
+            <th>Sukarela</th>
+            <th>Total</th>
+            <th>Reguler</th>
+            <th>Khusus</th>
+            <th>Barang</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in laporan_tahunan %}
+          <tr>
+            <td>{{ item.no }}</td>
+            <td>{{ item.nama }}</td>
+            <td>{{ item.simpanan.pokok|floatformat:0 }}</td>
+            <td>{{ item.simpanan.wajib|floatformat:0 }}</td>
+            <td>{{ item.simpanan.sukarela|floatformat:0 }}</td>
+            <td>{{ item.simpanan.total|floatformat:0 }}</td>
+            <td>{{ item.pinjaman.reguler|floatformat:0 }}</td>
+            <td>{{ item.pinjaman.khusus|floatformat:0 }}</td>
+            <td>{{ item.pinjaman.barang|floatformat:0 }}</td>
+            <td>{{ item.pinjaman.total|floatformat:0 }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="10" class="empty-state">Tidak ada data</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+</body>
+</html>

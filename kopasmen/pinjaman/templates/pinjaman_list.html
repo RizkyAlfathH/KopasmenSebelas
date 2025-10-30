@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Daftar Pinjaman</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    /* ==== Reset ==== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      color: #333;
+    }
+
+    /* ==== Sidebar ==== */
+    .sidebar {
+      width: 280px;
+      background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+      padding: 20px 0;
+      position: fixed;
+      height: 100vh;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    /* ==== Main Content ==== */
+    .main-content {
+      margin-left: 280px;
+      padding: 30px;
+      flex: 1;
+    }
+
+    .content-card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin-bottom: 30px;
+      transition: 0.3s;
+    }
+    .content-card:hover {
+      transform: translateY(-3px);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #4A2C2A;
+      font-size: 26px;
+      font-weight: bold;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #4A2C2A;
+    }
+
+    /* ==== Buttons ==== */
+    .add-button {
+      background: #FFD700;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      font-size: 14px;
+      transition: 0.3s;
+      border: 1px solid transparent;
+    }
+    .add-button:hover {
+      background: #e6c200;
+      border-color: #d4af37;
+    }
+
+    /* ==== Search Form ==== */
+    .search-form {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search-form input,
+    .search-form select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+    .search-form input:focus,
+    .search-form select:focus {
+      border-color: #FFD700;
+      outline: none;
+      box-shadow: 0 0 5px rgba(255,215,0,0.5);
+    }
+    .search-form button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #FFD700;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .search-form button:hover {
+      background: #e6c200;
+    }
+
+    /* ==== Table ==== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+    }
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      font-size: 14px;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background: #FFD700;
+      color: #333;
+      font-weight: bold;
+      font-size: 15px;
+    }
+    tr:hover td {
+      background: #fffbe6;
+      transition: 0.3s;
+    }
+    .empty-state {
+      text-align: center;
+      font-style: italic;
+      color: #999;
+      padding: 15px;
+    }
+
+    /* ==== Buttons in Table ==== */
+    .action-links {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      color: white;
+      transition: 0.3s;
+    }
+    .btn-view {
+      background: #007bff;
+    }
+    .btn-view:hover {
+      background: #0056b3;
+    }
+
+    /* ==== Pagination ==== */
+    .pagination {
+      margin-top: 25px;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .pagination a, .pagination span {
+      padding: 8px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      color: #333;
+      transition: 0.3s;
+    }
+    .pagination span.current {
+      font-weight: bold;
+      border: 1px solid #FFD700;
+      background: #FFD700;
+    }
+    .pagination a:hover {
+      background: #fdf3b0;
+      border-color: #FFD700;
+    }
+  </style>
+</head>
+<body>
+  {% include "partials/sidebar.html" %}
+
+  <div class="main-content">
+    <div class="content-card">
+      <h1>Manajemen Pinjaman</h1>
+
+      <div class="section-header">
+        <h2 class="section-title">Daftar Pinjaman Anggota</h2>
+        <form method="get" class="search-form">
+          <input type="text" name="search" placeholder="Cari nama/nomor anggota" value="{{ search_query }}">
+          <select name="sort">
+            <option value="nama" {% if sort_by|default:'' == 'nama' %}selected{% endif %}>Urutkan Nama</option>
+            <option value="total" {% if sort_by|default:'' == 'total' %}selected{% endif %}>Urutkan Total Pinjaman</option>
+          </select>
+          <button type="submit"><i class="bi bi-search"></i> Cari</button>
+          <a href="{% url 'tambah_pinjaman' %}" class="add-button">
+            <i class="bi bi-plus-lg"></i> Tambah Pinjaman
+          </a>
+        </form>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Nomor Anggota</th>
+            <th>Nama Anggota</th>
+            <th>Reguler</th>
+            <th>Khusus</th>
+            <th>Barang</th>
+            <th>Total</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for anggota in page_obj %}
+          <tr>
+            <td>{{ anggota.nomor_anggota }}</td>
+            <td>{{ anggota.nama }}</td>
+            <td>{{ anggota.Reguler|floatformat:"0" }}</td>
+            <td>{{ anggota.Khusus|floatformat:"0" }}</td>
+            <td>{{ anggota.Barang|floatformat:"0" }}</td>
+            <td><strong>{{ anggota.total|floatformat:"0" }}</strong></td>
+            <td class="action-links">
+              <a href="{% url 'pinjaman_anggota_detail' anggota.nomor_anggota %}" class="btn btn-view">
+                <i class="bi bi-eye"></i> Lihat
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="empty-state">Belum ada data pinjaman</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&sort={{ sort_by }}">Sebelumnya</a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="current">{{ num }}</span>
+          {% else %}
+            <a href="?page={{ num }}&search={{ search_query }}&sort={{ sort_by }}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&sort={{ sort_by }}">Berikutnya</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: 21.5cm 7.5cm; /* lebar x tinggi */
+            margin: 0;
+        }
+
+        body {
+            font-family: "Courier New", monospace;
+            font-size: 11pt;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .kwitansi {
+            width: 21.5cm;
+            height: 7.5cm;
+            border: 1px solid #000;
+            padding: 10px 15px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+            margin-bottom: 8px;
+        }
+
+        .header img {
+            height: 40px;
+            margin-right: 8px;
+        }
+
+        .header .info {
+            flex: 1;
+            font-size: 9pt;
+        }
+
+        .judul {
+            font-size: 11pt;
+            font-weight: bold;
+            text-decoration: underline;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .content {
+            margin-top: 6px;
+            line-height: 1.5;
+            font-size: 10pt;
+        }
+
+        .row {
+            margin: 2px 0;
+        }
+
+        .dots {
+            border-bottom: 1px dotted #000;
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        .ttd {
+            margin-top: 15px;
+        }
+
+        table.ttd {
+            width: 100%;
+            text-align: center;
+            font-size: 10pt;
+        }
+
+        table.ttd tr td {
+            width: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="kwitansi">
+        <div class="header">
+            {% load static %}
+            <img src="{% static 'images/logo_kopasmen.jpg' %}" alt="Logo">
+            <div class="info">
+                <div style="font-weight:bold;">KPRI SMK NEGERI 11 KOTA BANDUNG</div>
+                <div>(KOPASMEN)</div>
+                <div>
+                    Jl. Budi Cilember Telp. 6652442 Bandung <br>
+                    HAK BADAN HUKUM NO.: 9749/BH/KWK-10/21 <br>
+                    TANGGAL : 18 NOVEMBER 1991
+                </div>
+            </div>
+            <div class="judul">
+                {% if jenis_trans == "Setoran" %}
+                    BUKTI PENERIMAAN KAS
+                {% else %}
+                    BUKTI PENGELUARAN KAS
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="row">No. Transaksi : <span class="dots">{{ pk }}</span></div>
+
+            <div class="row">
+                {% if jenis_trans == "Setoran" %}
+                    Diterima dari: <span class="dots">{{ anggota.nama }}</span>
+                {% else %}
+                    Diberikan kepada: <span class="dots">{{ anggota.nama }}</span>
+                {% endif %}
+                (Anggota/Bukan Anggota)
+            </div>
+
+            <div class="row">
+                Jumlah : Rp <span class="dots">{{ jumlah|floatformat:0 }}</span>
+            </div>
+
+            <div class="row">
+                Untuk  : <span class="dots">{{ jenis_simpanan.nama_jenis }}</span>
+            </div>
+        </div>
+
+        <div class="ttd">
+            <div style="margin-bottom:10px;">
+                Bandung, {{ tanggal|date:"d F Y" }}
+            </div>
+            <table class="ttd">
+                <tr>
+                    <td>
+                        {% if jenis_trans == "Setoran" %}
+                            Pembayar,
+                        {% else %}
+                            Bendahara,
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if jenis_trans == "Setoran" %}
+                            Bendahara,
+                        {% else %}
+                            Penerima,
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr style="height:40px;"><td></td><td></td></tr>
+                <tr>
+                    <td>(____________________)</td>
+                    <td>(____________________)</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

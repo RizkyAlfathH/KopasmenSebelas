@@ -1,126 +1,328 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Akun</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOPASMEN - Kelola Akun</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Phosphor JS -->
+<script src="https://unpkg.com/phosphor-icons"></script>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    * {
+        font-family: 'Poppins', sans-serif;
+        box-sizing: border-box;
+    }
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: #f5f5f5;
+        margin: 0;
+        display: flex;
+    }
+    .sidebar {
+        width: 280px;
+        background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+        padding: 20px 0;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    .main-content {
+        margin-left: 280px;
+        padding: 30px;
+        flex: 1;
+    }
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
+    h1 { margin-bottom: 20px; color: #4A2C2A; }
+    .section-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .section-title { font-size: 20px; font-weight: 600; }
+    .add-button {
+        background: #FFD700; 
+        color: #4A2C2A; 
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 6px; 
+        text-decoration: none;
+        display: inline-flex; 
+        align-items: center; 
+        gap: 5px;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+    .add-button:hover { background: #e6c200; color: #4A2C2A; }
+    .search-box input {
+        padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        background: #fff;
+        border-radius: 0.25rem;
+        overflow: hidden;
+    }
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+        vertical-align: middle;
+    }
+    th {
+        background: #343a40;
+        color: #fff;
+        font-weight: 500;
+        text-align: left;
+    }
+    tr:nth-child(even) { background: #f8f9fa; }
+    .action-group {
+        display: inline-flex;
+        gap: 3px;
+        justify-content: center;
+    }
+    .action-group a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 3px;
+        color: #fff;
+        text-decoration: none;
+        font-size: 18px;
+        transition: 0.2s;
+    }
+    .action-view { background: #00aeffff; } /* biru cerah */
+        .action-edit { background: #ffa51fff; } /* hijau cerah */
+        .action-delete { background: #f31f1fff; } /* merah cerah */
+        .action-group a:hover { transform: scale(1.1); }
+
+    .empty-state { text-align: center; font-style: italic; color: #999; }
+    .pagination { margin-top: 15px; text-align: center; }
+    .pagination a {
+        padding: 6px 12px; margin: 0 5px;
+        border-radius: 6px; background: #FFD700;
+        color: #4A2C2A; text-decoration: none; font-weight: 600;
+    }
+    .pagination span { margin: 0 10px; font-size: 14px; color: #555; }
+    .pagination a:hover { background: #e6c200; }
+
+    table td, table th { text-align: left; } /* semua teks rata kiri */
+    table td:last-child { text-align: center; } /* kecuali aksi */
+</style>
 </head>
 <body>
-    <div class="container">
-        <aside class="sidebar">
-            
-            <ul class="nav-menu">
-                <li><a href="{% url 'dashboard' %}">Dashboard</a></a></li>
-                <li><a href="{% url 'kelola_akun' %}">Manajemen Aggota</a></li>
-            </ul>
-            
-            <div class="logout">
-                <a href="{% url 'logout' %}">Logout</a>
-            </div>
-        </aside>
-            
-            <h1>Manajemen Anggota</h1>
 
-            <div class="content">
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Daftar Admin</h2>
-                        <div style="display: flex; gap: 15px; align-items: center;">
-                            <div class="search-box">
-                                <input type="text" placeholder="Cari Nama Admin...">
-                            </div>
-                            <a href="{% url 'tambah_admin' %}" class="add-button">+ Tambah Admin</a>
-                        </div>
-                    </div>
-                    
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for admin in admins %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ admin.username }}</td>
-                                    <td>{{ admin.role }}</td>
-                                    <td class="action-links">
-                                        <a href="{% url 'edit_admin' admin.id_admin %}" class="btn btn-edit">Edit</a>
-                                        <a href="{% url 'hapus_admin' admin.id_admin %}" class="btn btn-delete" onclick="return confirm('Yakin ingin menghapus admin ini?');">Hapus</a>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="empty-state">Tidak ada data admin</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Daftar Anggota</h2>
-                        <div style="display: flex; gap: 15px; align-items: center;">
-                            <div class="search-box">
-                                <input type="text" placeholder="Cari Nama Anggota...">
-                            </div>
-                            <a href="{% url 'tambah_anggota' %}" class="add-button">+ Tambah Anggota</a>
-                        </div>
-                    </div>
-                    
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>NIP</th>
-                                    <th>Nama</th>
-                                    <th>Alamat</th>
-                                    <th>No Tlp</th>
-                                    <th>Email</th>
-                                    <th>Jenis Kelamin</th>
-                                    <th>Tanggal Daftar</th>
-                                    <th>Status</th>
-                                    <th>Alasan Tidak Aktif</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for anggota in anggotas %}
-                                <tr>
-                                    <td>{{ anggota.id_anggota }}</td>
-                                    <td>{{ anggota.nip }}</td>
-                                    <td>{{ anggota.nama }}</td>
-                                    <td>{{ anggota.alamat }}</td>
-                                    <td>{{ anggota.no_tlp }}</td>
-                                    <td>{{ anggota.email }}</td>
-                                    <td>{{ anggota.jenis_kelamin }}</td>
-                                    <td>{{ anggota.tgl_daftar|date:"d M Y" }}</td>
-                                    <td>{{ anggota.status }}</td>
-                                    <td>{{ anggota.alasan_tidak_aktif }}</td>
-                                    <td class="action-links">
-                                        <a href="{% url 'detail_anggota' anggota.id_anggota %}" class="btn btn-view">Lihat</a>
-                                        <a href="{% url 'edit_anggota' anggota.id_anggota %}" class="btn btn-edit">Edit</a>
-                                        <a href="{% url 'hapus_anggota' anggota.id_anggota %}" class="btn btn-delete" onclick="return confirm('Yakin ingin menghapus anggota ini?');">Hapus</a>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="6" class="empty-state">Tidak ada data anggota</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+{% include "partials/sidebar.html" %}
+
+<div class="main-content">
+
+<!-- Card Admin -->
+<div class="content-card">
+    <h1>Manajemen Admin</h1>
+    <div class="section-header">
+        <h2 class="section-title">Daftar Admin</h2>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <div class="search-box">
+                <input type="text" id="searchAdmin" placeholder="Cari Nama Admin...">
             </div>
-        </main>
+            <a href="{% url 'tambah_admin' %}" class="add-button">
+                <i class="ph-bold ph-user-plus"></i> Tambah Admin
+            </a>
+        </div>
     </div>
+    <div class="table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="text-align:center; width:100px;">ID</th>
+                    <th>User</th>
+                    <th style="width:400px;">Role</th>
+                    <th style="width:130px;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for admin in admins %}
+                <tr>
+                    <td style="text-align:center;">{{ forloop.counter }}</td>
+                    <td>{{ admin.username }}</td>
+                    <td>{{ admin.role }}</td>
+                    <td>
+                        <div class="action-group">
+                            <a href="{% url 'detail_admin' admin.id_admin %}" class="action-view" title="Lihat"><i class="ph-bold ph-eye"></i></a>
+                            <a href="{% url 'edit_admin' admin.id_admin %}" class="action-edit" title="Edit"><i class="ph-bold ph-pencil-simple"></i></a>
+                            <a href="{% url 'hapus_admin' admin.id_admin %}" class="action-delete" title="Hapus" onclick="return confirm('Yakin ingin menghapus admin ini?');"><i class="ph-bold ph-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="empty-state">Tidak ada data admin</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; flex-wrap:wrap;">
+        <div id="adminTableInfo">Menampilkan 0 sampai 0 dari 0 data</div>
+        <div id="adminTablePagination"></div>
+    </div>
+</div>
+
+<!-- Card Anggota -->
+<div class="content-card">
+    <h1>Manajemen Anggota</h1>
+    <div class="section-header">
+        <h2 class="section-title">Daftar Anggota</h2>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <div class="search-box">
+                <input type="text" id="searchAnggota" placeholder="Cari Nama Anggota...">
+            </div>
+            <a href="{% url 'tambah_anggota' %}" class="add-button"><i class="ph-bold ph-user-plus"></i> Tambah Anggota</a>
+            <a href="{% url 'export_excel_anggota' %}" class="add-button"><i class="ph-bold ph-file-xls"></i> Excel</a>
+            <a href="{% url 'export_pdf_anggota' %}" class="add-button"><i class="ph-bold ph-file-pdf"></i> PDF</a>
+            <form id="importForm" action="{% url 'upload_excel' %}" method="post" enctype="multipart/form-data" style="display: flex; align-items: center; gap: 5px;"> 
+                {% csrf_token %}
+                <label for="importFile" class="add-button" style="cursor: pointer;">
+                    <i class="ph-bold ph-file-arrow-up"></i> Import Excel
+                </label>
+                <input type="file" name="excel_file" id="importFile" accept=".xlsx, .xls" style="display: none;" onchange="document.getElementById('importForm').submit()">
+            </form>
+        </div>
+    </div>
+    <div class="table-container">
+        <table class="anggota-table">
+            <thead>
+                <tr>
+                    <th style="text-align:center;" >No. Anggota</th><th>Nama</th><th>NIP</th><th>Jenis Kelamin</th>
+                    <th>Tanggal Daftar</th><th>Status</th><th>Alasan Tidak Aktif</th><th style="width:130px;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for anggota in anggotas %}
+                <tr>
+                    <td style="text-align:center;" >{{ anggota.nomor_anggota|default:"-" }}</td>
+                    <td>{{ anggota.nama|default:"-" }}</td>
+                    <td>{{ anggota.nip|default:"-" }}</td>
+                    <td>{{ anggota.jenis_kelamin|default:"-" }}</td>
+                    <td>{{ anggota.tanggal_daftar|date:"d M Y"|default:"-" }}</td>
+                    <td>{{ anggota.status|default:"-" }}</td>
+                    <td>{{ anggota.alasan_tidak_aktif|default:"-" }}</td>
+                    <td>
+                        <div class="action-group">
+                            <a href="{% url 'detail_anggota' anggota.nomor_anggota %}" class="action-view" title="Lihat"><i class="ph-bold ph-eye"></i></a>
+                            <a href="{% url 'edit_anggota' anggota.nomor_anggota %}" class="action-edit" title="Edit"><i class="ph-bold ph-pencil-simple"></i></a>
+                            <a href="{% url 'hapus_anggota' anggota.nomor_anggota %}" class="action-delete" title="Hapus" onclick="return confirm('Yakin ingin menghapus anggota ini?');"><i class="ph-bold ph-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="11" class="empty-state">Tidak ada data anggota</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; flex-wrap:wrap;">
+        <div id="anggotaTableInfo">Menampilkan 0 sampai 0 dari 0 data</div>
+        <div id="anggotaTablePagination"></div>
+    </div>
+
+    <script>
+        function paginateTable(tableSelector, infoSelector, perPage = 10) {
+            const table = document.querySelector(tableSelector);
+            const rows = Array.from(table.querySelectorAll("tbody tr"));
+            const info = document.querySelector(infoSelector);
+            const pagContainer = info.nextElementSibling;
+            let currentPage = 1;
+
+            function getVisibleRows() {
+                return rows.filter(row => row.style.display !== "none");
+            }
+
+            function renderPage(page) {
+                const visibleRows = getVisibleRows();
+                const totalPages = Math.ceil(visibleRows.length / perPage) || 1;
+                currentPage = Math.min(page, totalPages);
+
+                const start = (currentPage - 1) * perPage;
+                const end = start + perPage;
+
+                // Tampilkan hanya baris yang sesuai halaman & terlihat
+                let visibleCount = 0;
+                visibleRows.forEach((row, idx) => {
+                    row.style.display = (idx >= start && idx < end) ? "" : "none";
+                    if (idx >= start && idx < end) visibleCount++;
+                });
+
+                // Update teks info
+                const showingStart = visibleRows.length === 0 ? 0 : start + 1;
+                const showingEnd = end > visibleRows.length ? visibleRows.length : end;
+                info.textContent = `Menampilkan ${showingStart}–${showingEnd} dari ${rows.length} data`;
+
+                // Update tombol pagination
+                pagContainer.innerHTML = "";
+                for (let i = 1; i <= totalPages; i++) {
+                    const btn = document.createElement("a");
+                    btn.href = "#";
+                    btn.textContent = i;
+                    btn.style.margin = "0 3px";
+                    btn.style.padding = "6px 12px";
+                    btn.style.borderRadius = "6px";
+                    btn.style.background = (i === currentPage) ? "#007bff" : "#FFD700";
+                    btn.style.color = (i === currentPage) ? "#fff" : "#4A2C2A";
+                    btn.style.textDecoration = "none";
+                    btn.addEventListener("click", e => {
+                        e.preventDefault();
+                        renderPage(i);
+                    });
+                    pagContainer.appendChild(btn);
+                }
+            }
+
+            // Jalankan pertama kali
+            renderPage(currentPage);
+
+            // Return fungsi agar bisa dipanggil ulang setelah filter
+            return renderPage;
+        }
+
+        // Jalankan pagination untuk Admin & Anggota
+        const renderAdminPage = paginateTable(".admin-table", "#adminTableInfo", 20);
+        const renderAnggotaPage = paginateTable(".anggota-table", "#anggotaTableInfo", 20);
+
+        // ====== Search Realtime ======
+        function filterTable(inputId, tableSelector, renderPageFunc) {
+            const input = document.getElementById(inputId);
+            input.addEventListener("keyup", function() {
+                const filter = input.value.toLowerCase();
+                const table = document.querySelector(tableSelector);
+                const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+                rows.forEach(row => {
+                    const text = row.cells[1]?.textContent.toLowerCase() || "";
+                    row.style.display = text.includes(filter) ? "" : "none";
+                });
+
+                renderPageFunc(1); // reset ke halaman 1 setelah filter
+            });
+        }
+
+        filterTable("searchAdmin", ".admin-table", renderAdminPage);
+        filterTable("searchAnggota", ".anggota-table", renderAnggotaPage);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
 </body>
 </html>

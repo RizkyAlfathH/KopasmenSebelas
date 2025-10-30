@@ -12,15 +12,19 @@ class Anggota(models.Model):
         ('nonaktif', 'Nonaktif'),
     ]
 
-    id_anggota = models.BigAutoField(primary_key=True)
-    nip = models.CharField(max_length=30, unique=True)
+    nomor_anggota = models.CharField(max_length=20, unique=True, primary_key=True, default="0")
     nama = models.CharField(max_length=100)
+    umur = models.IntegerField(blank=True, null=True)
+    nip = models.CharField(max_length=30, unique=False, blank=True, null=True)
     alamat = models.CharField(max_length=255, blank=True, null=True)
     no_telp = models.CharField(max_length=20, blank=True, null=True)
     email = models.CharField(max_length=50, blank=True, null=True)
     jenis_kelamin = models.CharField(max_length=10, choices=JK_CHOICES)
+    pekerjaan = models.CharField(max_length=100, blank=True, null=True)  
     tanggal_daftar = models.DateField(default=datetime.now)
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='aktif') 
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='aktif')
+    alasan_nonaktif = models.CharField(max_length=255, blank=True, null=True)
+    tanggal_nonaktif = models.DateField(blank=True, null=True)
     password_hash = models.CharField(max_length=255)
 
     class Meta:
@@ -30,10 +34,7 @@ class Anggota(models.Model):
         return f"{self.nip} - {self.nama}"
 
     def set_password(self, raw_password: str):
-        
         self.password_hash = make_password(raw_password)
 
     def check_password(self, raw_password: str) -> bool:
         return check_password(raw_password, self.password_hash)
-    
-

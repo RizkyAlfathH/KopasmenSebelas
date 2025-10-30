@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Simpanan</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            margin-top: 60px;
+            padding: 30px;
+            min-height: calc(100vh - 60px);
+            background-color: #f5f5f5;
+        }
+
+        .content-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            animation: fadeIn 0.5s ease;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #4A2C2A;
+            font-size: 22px;
+            border-bottom: 2px solid #FFD700;
+            padding-bottom: 10px;
+        }
+
+        form p {
+            margin-bottom: 15px;
+        }
+
+        form label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #333;
+        }
+
+        form input,
+        form select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        form input:focus,
+        form select:focus {
+            border-color: #FFD700;
+            outline: none;
+            box-shadow: 0 0 4px rgba(255, 215, 0, 0.6);
+        }
+
+        .form-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        button[type="submit"] {
+            background: #FFD700;
+            border: none;
+            color: #333;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background: #e6c200;
+            transform: translateY(-2px);
+        }
+
+        a.cancel-btn {
+            background: #f2f2f2;
+            color: #333;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            transition: all 0.3s ease;
+        }
+
+        a.cancel-btn:hover {
+            background: #e0e0e0;
+        }
+
+        /* Autocomplete */
+        .autocomplete-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        #anggota-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: #fff;
+            max-height: 180px;
+            overflow-y: auto;
+            list-style: none;
+            padding: 0;
+            margin: 2px 0 0 0;
+            z-index: 9999;
+            box-sizing: border-box;
+            display: none;
+        }
+        #anggota-suggestions li {
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #anggota-suggestions li:hover {
+            background: #f5f5f5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    {% include "partials/sidebar.html" %}
+
+    <div class="main-content">
+        <div class="content-card">
+            <h1>{{ judul }}</h1>
+            <form method="post" id="simpanan-form">
+                {% csrf_token %}
+                
+                <!-- Tanggal -->
+                <p>
+                    {{ form.tanggal_menyimpan.label_tag }}
+                    {{ form.tanggal_menyimpan }}
+                </p>
+
+                <!-- Anggota dengan autocomplete -->
+                <div class="autocomplete-wrapper">
+                    <label for="anggota-autocomplete">Anggota:</label>
+                    <input type="text" id="anggota-autocomplete" placeholder="Ketik nama atau NIP..." autocomplete="off">
+                    <input type="hidden" name="anggota" id="anggota-id">
+                    <ul id="anggota-suggestions"></ul>
+                </div>
+
+                <!-- Jenis Simpanan -->
+                <p>
+                    {{ form.jenis_simpanan.label_tag }}
+                    {{ form.jenis_simpanan }}
+                </p>
+
+                <!-- Jumlah Menyimpan -->
+                <p>
+                    {{ form.jumlah_menyimpan.label_tag }}
+                    {{ form.jumlah_menyimpan }}
+                </p>
+
+                <!-- Dana Sosial -->
+                <p id="field-dana-sosial" style="display:none;">
+                    <label for="id_dana_sosial">Dana Sosial:</label>
+                    <input type="number" name="dana_sosial" id="id_dana_sosial" min="0" value="0">
+                </p>
+
+                {{ form.admin }}
+
+                <div class="form-actions">
+                    <button type="submit">💾 Simpan</button>
+                    <a href="{% url 'daftar_simpanan' %}" class="cancel-btn">❌ Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const input = document.getElementById("anggota-autocomplete");
+            const suggestionsBox = document.getElementById("anggota-suggestions");
+            const anggotaId = document.getElementById("anggota-id");
+            const form = document.getElementById("simpanan-form");
+
+            // Autocomplete fetch
+            input.addEventListener("input", function () {
+                const query = this.value.trim();
+                if (query.length < 1) {
+                    suggestionsBox.innerHTML = "";
+                    suggestionsBox.style.display = "none";
+                    return;
+                }
+                fetch(`/simpanan/autocomplete/anggota/?term=${query}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        suggestionsBox.innerHTML = "";
+                        if (data.length > 0) {
+                            suggestionsBox.style.display = "block";
+                            data.forEach(item => {
+                                const li = document.createElement("li");
+                                li.textContent = `${item.nip} - ${item.nama}`;
+                                li.addEventListener("click", function () {
+                                    input.value = `${item.nama} (${item.nip})`;
+                                    anggotaId.value = item.id; // penting
+                                    suggestionsBox.innerHTML = "";
+                                    suggestionsBox.style.display = "none";
+                                });
+                                suggestionsBox.appendChild(li);
+                            });
+                        } else {
+                            suggestionsBox.style.display = "none";
+                        }
+                    });
+            });
+
+            document.addEventListener("click", function (e) {
+                if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                    suggestionsBox.style.display = "none";
+                }
+            });
+
+            // Validasi sebelum submit
+            form.addEventListener("submit", function (e) {
+                if (!anggotaId.value) {
+                    e.preventDefault();
+                    alert("⚠️ Harap pilih anggota dari daftar autocomplete!");
+                    input.focus();
+                }
+            });
+
+            // Logic tampil Dana Sosial
+            const jenisSimpanan = document.getElementById("id_jenis_simpanan");
+            const fieldDanaSosial = document.getElementById("field-dana-sosial");
+
+            jenisSimpanan.addEventListener("change", function () {
+                const selected = this.options[this.selectedIndex].text.toLowerCase();
+                const anggota = anggotaId.value;
+                const tanggal = document.getElementById("id_tanggal_menyimpan").value;
+
+                fieldDanaSosial.style.display = "none";
+
+                if (selected.includes("wajib") && anggota && tanggal) {
+                    fetch(`/simpanan/cek-dana-sosial/${anggota}/${tanggal}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.sudah_bayar) {
+                                fieldDanaSosial.style.display = "block";
+                            }
+                        })
+                        .catch(err => console.error("Error cek dana sosial:", err));
+                }
+            });
+        });
+    </script>
+</body>
+</html>
