@@ -59,7 +59,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
 ]
 
-ROOT_URLCONF = 'kopasmen.urls'
+ROOT_URLCONF = 'kopasmen.kopasmen.urls'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
