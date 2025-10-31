@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-27nogj*$ysph%l(psf4x#$_frt)2n7fa-x#p+d*nb!yy)r#k#s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -60,7 +60,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
 ]
 
-ROOT_URLCONF = 'kopasmen.kopasmen.urls'
+ROOT_URLCONF = 'kopasmen.urls'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
