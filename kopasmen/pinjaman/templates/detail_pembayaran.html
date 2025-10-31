@@ -3,105 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Detail Pembayaran</title>
+<title>KOPASMEN - Detail Pembayaran</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/phosphor-icons"></script>
+
 <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f5f5f5;
-    color: #333;
-    display: flex;
-    margin: 0;
-  }
-  a { text-decoration: none; color: inherit; }
+* {
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+body {
+  background: #fafafa;
+  color: #333;
+  margin: 0;
+  display: flex;
+}
+a { text-decoration: none; color: inherit; }
 
-  /* ===== Sidebar ===== */
-  .sidebar {
-    width: 260px;
-    background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
-    padding: 20px 0;
-    position: fixed;
-    height: 100vh;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-  }
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+  padding: 20px 0;
+  position: fixed;
+  height: 100vh;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.08);
+}
 
-  /* ===== Main Content ===== */
-  .main-content {
-    margin-left: 260px;
-    padding: 30px;
-    flex: 1;
-  }
+/* Main Content */
+.main-content {
+  margin-left: 260px;
+  padding: 35px;
+  flex: 1;
+}
 
-  h1 {
-    color: #4A2C2A;
-    font-size: 26px;
-    margin-bottom: 25px;
-  }
+h1 {
+  color: #4A2C2A;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-  /* ===== Card ===== */
-  .card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-  }
+/* Card */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  margin-bottom: 25px;
+}
 
-  .row {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 15px;
-  }
+/* Layout form */
+.row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+.col {
+  flex: 1;
+  min-width: 220px;
+}
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #4A2C2A;
+}
 
-  .col {
-    flex: 1;
-    min-width: 200px;
-  }
+/* Input (readonly) */
+input[readonly] {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fffefc;
+  font-size: 14px;
+  color: #333;
+}
 
-  label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 6px;
-    color: #4A2C2A;
-  }
+/* Tombol */
+.btn-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
 
-  input[readonly] {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-    background: #fffefc;
-    color: #333;
-  }
+/* Tombol utama */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s ease;
+}
+.btn-gold {
+  background: #FFD700;
+  color: #4A2C2A;
+}
+.btn-gold:hover {
+  background: #e6c200;
+}
 
-  /* Tombol */
-  .btn-wrapper {
-    text-align: right;
-  }
-  .btn-back {
-    display: inline-block;
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    background: #FFD700;
-    color: #333;
-    font-weight: bold;
-    transition: 0.2s;
-    cursor: pointer;
-  }
+/* Container tombol kembali */
+.btn-back-container {
+  text-align: right;
+  margin-top: 25px;
+}
 
-  /* Responsive */
-  @media(max-width:768px){
-    .row { flex-direction: column; }
-    .main-content { margin-left: 0; }
-    .sidebar { position: relative; width: 100%; height: auto; box-shadow: none; }
-    .btn-wrapper { text-align: center; margin-top: 15px; }
-  }
+/* Responsive */
+@media(max-width:768px){
+  .row { flex-direction: column; }
+  .main-content { margin-left: 0; }
+  .sidebar { position: relative; width: 100%; height: auto; box-shadow: none; }
+  .btn-wrapper { justify-content: center; margin-top: 25px; }
+}
 </style>
 </head>
-<body>
 
+<body>
   <div class="sidebar">
     {% include "partials/sidebar.html" %}
   </div>
@@ -150,7 +178,7 @@
         </div>
         <div class="col">
           <label>Tanggal Bayar:</label>
-          <input type="text" readonly value="{{ pembayaran.tanggal_bayar|date:'d M Y' }}">
+          <input type="text" readonly value="{{ pembayaran.tanggal_bayar|date:'d F Y' }}">
         </div>
       </div>
 
@@ -166,12 +194,11 @@
       </div>
     </div>
 
-    <div class="btn-wrapper">
-      <a href="{% url 'detail_pinjaman' pembayaran.id_pinjaman.id_pinjaman %}" class="btn-back">
-        &larr; Kembali
+    <div class="btn-back-container">
+      <a href="{% url 'detail_pinjaman' pembayaran.id_pinjaman.id_pinjaman %}" class="btn btn-gold">
+        Kembali
       </a>
     </div>
   </div>
-
 </body>
 </html>

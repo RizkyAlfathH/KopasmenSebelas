@@ -2,15 +2,22 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Pinjaman {{ anggota.nama }}</title>
+    <title>KOPASMEN - Pinjaman {{ anggota.nama }}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Segoe UI', sans-serif;
             background: #f5f5f5;
             margin: 0;
             display: flex;
         }
-
         .sidebar {
             width: 280px;
             background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
@@ -19,142 +26,121 @@
             height: 100vh;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
-
         .main-content {
             margin-left: 280px;
             padding: 30px;
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
         }
-
         .content-card {
             background: white;
             border-radius: 12px;
             padding: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
             margin-bottom: 30px;
         }
-
         h1, h2 {
-            margin-bottom: 20px;
             color: #4A2C2A;
             font-weight: 600;
-        }
-
-        /* Tombol utama */
-        .btn-bayar {
-            background: #FFD700;
-            color: #333;
-            font-weight: 600;
-            padding: 10px 18px;
-            border-radius: 8px;
-            text-decoration: none;
-            cursor: pointer;
-            display: inline-block;
             margin-bottom: 20px;
-            border: none;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-            transition: all 0.2s ease;
         }
 
+        /* Tombol utama (Bayar dan Kembali) */
+            .btn-bayar {
+            background: #FFD700;
+            color: #4A2C2A;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 18px; /* ⬅️ tambahkan jarak di bawah tombol */
+        }
         .btn-bayar:hover {
             background: #e6c200;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            color: #4A2C2A;
         }
 
-        /* Tombol kembali */
+        .btn-back,
+        .btn-back:hover {
+            background: #FFD700;
+            color: #4A2C2A;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s ease;
+        }
+
         .btn-back-container {
             text-align: right;
-            margin-top: 25px;
+            margin-top: 12px;
         }
-
-        .btn-back {
-            display: inline-block;
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: 1px solid #FFD700;
-            background: #FFD700;
-            color: #333;
-            font-weight: bold;
-            text-decoration: none;   /* biar ga ada garis bawah */
-            transition: 0.2s;
-        }
-
-        .btn-back:hover {
-            background: #e6c200;
-            color: #222;
-            text-decoration: none;   /* pastiin hover juga ga muncul underline */
-        }
-
-
 
         /* Tabel */
         table {
             width: 100%;
             border-collapse: collapse;
-            border-radius: 12px;
-            overflow: hidden;
-            background: white;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-        }
-
-        th, td {
-            padding: 12px 10px;
-            text-align: center;
             font-size: 14px;
-            border-bottom: 1px solid #eee;
+            background: #fff;
+            border-radius: 0.25rem;
+            overflow: hidden;
         }
-
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
+        }
         th {
-            background: #FFD700;
-            color: #333;
-            font-weight: 600;
+            background: #343a40;
+            color: #fff;
+            font-weight: 500;
         }
-
-        tr:nth-child(even) { background: #fafafa; }
-        tr:nth-child(odd) { background: #fffefc; }
+        tr:nth-child(even) { background: #f8f9fa; }
 
         .action-links a {
-            padding: 6px 12px;
-            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 3px;
+            color: #fff;
             text-decoration: none;
-            font-size: 13px;
-            color: white;
-            background: #007bff;
+            font-size: 16px;
+            margin: 0 2px;
             transition: 0.2s;
         }
+        .action-links a:hover { transform: scale(1.1); }
+        .action-view { background: #00aeff; }
+        .action-edit { background: #ffa51f; }
+        .action-delete { background: #f31f1f; }
 
-        .action-links a:hover { opacity: 0.9; }
+        .empty-state { text-align: center; font-style: italic; color: #999; }
 
-        .empty-state {
-            text-align: center;
-            font-style: italic;
-            color: #999;
-        }
-
-        /* Modal overlay */
+        /* Modal */
         #bayarModal {
             display: none;
             position: fixed;
-            top:0;
-            left:0;
-            width:100%;
-            height:100%;
+            top:0; left:0;
+            width:100%; height:100%;
             background: rgba(0,0,0,0.4);
             justify-content:center;
             align-items:center;
-            z-index: 999;
+            z-index:999;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-
-        #bayarModal.active {
-            display: flex;
-            opacity: 1;
-        }
+        #bayarModal.active { display: flex; opacity: 1; }
 
         #bayarModal .modal-card {
             background: #fff;
@@ -162,69 +148,48 @@
             border-radius: 12px;
             min-width: 350px;
             max-width: 450px;
-            max-height: 80vh;
-            overflow-y: auto;
             box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            transform: translateY(-20px);
-            transition: transform 0.3s ease;
+            text-align: center;
         }
-
-        #bayarModal.active .modal-card {
-            transform: translateY(0);
-        }
-
         #bayarModal h3 {
             margin-top: 0;
-            margin-bottom: 20px;
             color: #4A2C2A;
-            text-align: center;
             font-weight: 600;
         }
-
         #listPinjaman {
             list-style: none;
             padding: 0;
-            margin: 0;
+            margin: 15px 0;
         }
-
         #listPinjaman li {
             margin-bottom: 12px;
         }
-
         #listPinjaman li a {
             display: block;
             background: #FFD700;
-            color: #333;
+            color: #4A2C2A;
             text-decoration: none;
             padding: 10px 15px;
-            border-radius: 8px;
+            border-radius: 6px;
             font-weight: 600;
-            text-align: center;
-            transition: all 0.2s ease;
+            transition: 0.2s;
         }
-
         #listPinjaman li a:hover {
             background: #e6c200;
-            transform: translateY(-2px);
         }
-
-        #bayarModal button.close-btn {
-            margin-top: 20px;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 8px;
+        .close-btn {
+            margin-top: 10px;
             background: #FFD700;
+            color: #4A2C2A;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            transition: all 0.2s ease;
+            transition: 0.2s;
         }
-
-        #bayarModal button.close-btn:hover {
+        .close-btn:hover {
             background: #e6c200;
-            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -232,9 +197,10 @@
     {% include "partials/sidebar.html" %}
 
     <div class="main-content">
+
         <!-- Pinjaman Aktif -->
         <div class="content-card">
-            <h1>Pinjaman Aktif {{ anggota.nama }} ({{ anggota.nomor_anggota }})</h1>
+            <h1>Pinjaman {{ anggota.nama }} ({{ anggota.nomor_anggota }})</h1>
 
             <button class="btn-bayar" onclick="openBayarModal({{ all_pinjaman_list|safe }})">Bayar</button>
 
@@ -264,9 +230,7 @@
                 <tbody>
                     {% for nomor_anggota, data in anggota_data.items %}
                         {% if data.pinjaman_reguler_awal == 0 and data.pinjaman_khusus_awal == 0 and data.pinjaman_barang_awal == 0 %}
-                            <tr>
-                                <td colspan="10" class="empty-state">Belum ada pinjaman aktif</td>
-                            </tr>
+                            <tr><td colspan="10" class="empty-state">Belum ada pinjaman aktif</td></tr>
                         {% else %}
                             {% if data.pinjaman_reguler_awal and data.status_reguler != "Lunas" %}
                                 <tr>
@@ -281,8 +245,8 @@
                                     <td>{{ data.status_reguler|default_if_none:"-" }}</td>
                                     <td class="action-links">
                                         {% if data.pinjaman_reguler_id %}
-                                            <a href="{% url 'detail_pinjaman' data.pinjaman_reguler_id %}">Detail</a>
-                                        {% else %}<span>-</span>{% endif %}
+                                            <a href="{% url 'detail_pinjaman' data.pinjaman_reguler_id %}" class="action-view" title="Detail"><i class="ph-bold ph-eye"></i></a>
+                                        {% else %}-{% endif %}
                                     </td>
                                 </tr>
                             {% endif %}
@@ -299,8 +263,8 @@
                                     <td>{{ data.status_khusus|default_if_none:"-" }}</td>
                                     <td class="action-links">
                                         {% if data.pinjaman_khusus_id %}
-                                            <a href="{% url 'detail_pinjaman' data.pinjaman_khusus_id %}">Detail</a>
-                                        {% else %}<span>-</span>{% endif %}
+                                            <a href="{% url 'detail_pinjaman' data.pinjaman_khusus_id %}" class="action-view" title="Detail"><i class="ph-bold ph-eye"></i></a>
+                                        {% else %}-{% endif %}
                                     </td>
                                 </tr>
                             {% endif %}
@@ -317,16 +281,14 @@
                                     <td>{{ data.status_barang|default_if_none:"-" }}</td>
                                     <td class="action-links">
                                         {% if data.pinjaman_barang_id %}
-                                            <a href="{% url 'detail_pinjaman' data.pinjaman_barang_id %}">Detail</a>
-                                        {% else %}<span>-</span>{% endif %}
+                                            <a href="{% url 'detail_pinjaman' data.pinjaman_barang_id %}" class="action-view" title="Detail"><i class="ph-bold ph-eye"></i></a>
+                                        {% else %}-{% endif %}
                                     </td>
                                 </tr>
                             {% endif %}
                         {% endif %}
                     {% empty %}
-                        <tr>
-                            <td colspan="10" class="empty-state">Belum ada pinjaman aktif</td>
-                        </tr>
+                        <tr><td colspan="10" class="empty-state">Belum ada pinjaman aktif</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -357,29 +319,26 @@
                             <td>{{ pin.jasa_persen|floatformat:"-2" }}%</td>
                             <td>{{ pin.status }}</td>
                             <td class="action-links">
-                                <a href="{% url 'detail_pinjaman' pin.id %}">Detail</a>
+                                <a href="{% url 'detail_pinjaman' pin.id %}" class="action-view" title="Detail"><i class="ph-bold ph-eye"></i></a>
                             </td>
                         </tr>
                     {% empty %}
-                        <tr>
-                            <td colspan="9" class="empty-state">Belum ada riwayat pinjaman</td>
-                        </tr>
+                        <tr><td colspan="7" class="empty-state">Belum ada riwayat pinjaman</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        <!-- Tombol kembali bawah kanan -->
+        <!-- Tombol Kembali -->
         <div class="btn-back-container">
-            <a href="{% url 'pinjaman_list' %}" class="btn-back">&larr; Kembali</a>
+            <a href="{% url 'pinjaman_list' %}" class="btn-back">Kembali</a>
         </div>
-
     </div>
 
     <script>
         function openBayarModal(pinjamanList) {
-            let modal = document.getElementById("bayarModal");
-            let list = document.getElementById("listPinjaman");
+            const modal = document.getElementById("bayarModal");
+            const list = document.getElementById("listPinjaman");
             list.innerHTML = "";
 
             if (!pinjamanList || pinjamanList.length === 0) {
@@ -394,8 +353,7 @@
         }
 
         function closeBayarModal() {
-            let modal = document.getElementById("bayarModal");
-            modal.classList.remove("active");
+            document.getElementById("bayarModal").classList.remove("active");
         }
     </script>
 </body>

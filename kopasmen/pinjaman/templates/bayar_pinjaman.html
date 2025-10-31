@@ -3,159 +3,221 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bayar Pinjaman</title>
+<title>KOPASMEN - Bayar Pinjaman</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/phosphor-icons"></script>
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f5f5f5;
-    color: #333;
-    display: flex;
-    margin: 0;
-  }
-  a { text-decoration: none; color: inherit; }
+* {
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+body {
+  background: #fafafa;
+  color: #333;
+  margin: 0;
+  display: flex;
+}
+a { text-decoration: none; color: inherit; }
 
-  /* Sidebar */
-  .sidebar {
-    width: 260px;
-    background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
-    padding: 20px 0;
-    position: fixed;
-    height: 100vh;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-  }
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+  padding: 20px 0;
+  position: fixed;
+  height: 100vh;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.08);
+}
 
-  /* Main Content */
-  .main-content {
-    margin-left: 260px;
-    padding: 30px;
-    flex: 1;
-  }
+/* Main content */
+.main-content {
+  margin-left: 260px;
+  padding: 35px;
+  flex: 1;
+}
 
-  h1 {
-    color: #4A2C2A;
-    font-size: 26px;
-    margin-bottom: 25px;
-  }
+h1 {
+  color: #4A2C2A;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-  /* Card */
-  .card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px;
-    margin-bottom: 30px;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-  }
+/* Card */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  margin-bottom: 25px;
+}
 
-  .row {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 15px;
-  }
+/* Layout form */
+.row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+.col {
+  flex: 1;
+  min-width: 220px;
+}
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #4A2C2A;
+}
 
-  .col {
-    flex: 1;
-    min-width: 200px;
-  }
+/* Input & Select */
+input, select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+input:focus, select:focus {
+  border-color: #FFD700;
+  outline: none;
+}
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%234A2C2A' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px;
+  cursor: pointer;
+}
+input[disabled], input[readonly] {
+  background: #fff;
+  color: #000;
+}
 
-  label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 6px;
-    color: #4A2C2A;
-  }
+/* Datepicker wrapper */
+.datepicker-wrapper {
+  position: relative;
+}
+.datepicker-wrapper input {
+  padding-right: 36px;
+}
+.datepicker-wrapper .calendar-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #4A2C2A;
+  font-size: 18px;
+  pointer-events: none;
+}
 
-  input, select {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-    background: #fffefc;
-  }
+/* Tombol */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 40px; /* jarak tombol dengan tabel */
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s ease;
+}
+.btn-gold {
+  background: #FFD700;
+  color: #4A2C2A;
+}
+.btn-gold:hover { background: #e6c200; }
+.btn-outline {
+  background: transparent;
+  border: 1px solid #ccc;
+  color: #4A2C2A;
+}
+.btn-outline:hover { background: #fff9d4; }
 
-  input[disabled] {
-    background: #fdfaf4;
-    color: #555;
-  }
+/* Info kecil */
+.keterangan {
+  font-size: 12px;
+  color: #555;
+  margin-top: 4px;
+}
 
-  /* Buttons */
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-  }
+/* Flatpickr */
+.flatpickr-calendar {
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  font-family: 'Poppins', sans-serif;
+}
+.flatpickr-day {
+  border-radius: 6px;
+}
+.flatpickr-day.selected {
+  background: #FFD700;
+  border-color: #FFD700;
+  color: #4A2C2A;
+}
+.flatpickr-day:hover {
+  background: #fff3cd;
+}
 
-  .btn-primary {
-    background: #FFD700;
-    color: #333;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-  .btn-primary:hover { background: #e6c200; }
-
-  .btn-cancel {
-    background: #fffefc;
-    color: #4A2C2A;
-    border: 1px solid #ccc;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: 0.2s;
-  }
-  .btn-cancel:hover { background: #FFD700; color: #333; }
-
-  /* Info kecil */
-  .keterangan {
-    font-size: 12px;
-    color: #555;
-    margin-top: 4px;
-  }
-
-  /* Responsive */
-  @media(max-width:768px){
-    .row { flex-direction: column; }
-    .main-content { margin-left: 0; }
-    .sidebar { position: relative; width: 100%; height: auto; box-shadow: none; }
-    .form-actions { justify-content: center; }
-  }
+/* Responsive */
+@media(max-width:768px){
+  .row { flex-direction: column; }
+  .main-content { margin-left: 0; }
+  .sidebar { position: relative; width: 100%; height: auto; box-shadow: none; }
+  .form-actions { justify-content: center; }
+}
 </style>
 </head>
-<body>
 
+<body>
   <div class="sidebar">
     {% include "partials/sidebar.html" %}
   </div>
 
   <div class="main-content">
-    <h1>Bayar Pinjaman</h1>
 
     <form method="POST" class="card">
+      <h1>Bayar Pinjaman</h1>
       {% csrf_token %}
       <div class="row">
         <div class="col">
           <label>Nama Anggota:</label>
-          <input type="text" value="{{ pinjaman.nomor_anggota }}" disabled>
+          <input type="text" value="{{ pinjaman.nomor_anggota.nomor_anggota }} - {{ pinjaman.nomor_anggota.nama }}" readonly>
         </div>
         <div class="col">
           <label>Pinjaman:</label>
-          <input type="text" value="Rp {{ pinjaman.jumlah_pinjaman|floatformat:0 }}" disabled>
+          <input type="text" value="Rp {{ pinjaman.jumlah_pinjaman|floatformat:0 }}" readonly>
         </div>
       </div>
 
       <div class="row">
         <div class="col">
           <label>Sisa Pinjaman:</label>
-          <input type="text" id="sisa_pinjaman" value="{{ sisa_pinjaman|floatformat:0 }}" disabled>
+          <input type="text" id="sisa_pinjaman" value="{{ sisa_pinjaman|floatformat:0 }}" readonly>
         </div>
         <div class="col">
           <label>Tanggal:</label>
-          <input type="date" name="tanggal_bayar" required>
+          <div class="datepicker-wrapper">
+            <input type="text" id="tanggal_bayar" name="tanggal_bayar" class="datepicker" placeholder="Pilih tanggal" required>
+            <i class="ph-calendar calendar-icon"></i>
+          </div>
         </div>
       </div>
 
@@ -163,15 +225,19 @@
         <div class="col">
           <label>Jumlah Cicilan Pokok:</label>
           <input type="hidden" id="angsuran_pokok" value="{{ angsuran_pokok }}">
-          <input type="text" value="Rp {{ angsuran_pokok|floatformat:0 }}" disabled>
+          <input type="text" value="Rp {{ angsuran_pokok|floatformat:0 }}" readonly>
         </div>
         <div class="col">
           <label>Persentase Jasa:</label>
-          <input type="text" value="{{ pinjaman.jasa_persen|floatformat:2 }}%" disabled>
+          <input type="text" value="{{ pinjaman.jasa_persen|floatformat:1|cut:'.0' }}%" readonly>
         </div>
       </div>
 
       <div class="row">
+        <div class="col">
+          <label>Kategori Jasa:</label>
+          <input type="text" value="{{ pinjaman.id_kategori_jasa.kategori_jasa }}" readonly>
+        </div>
         <div class="col">
           <label>Pilihan Pembayaran:</label>
           <select id="tipe_bayar" name="tipe_bayar">
@@ -179,16 +245,14 @@
             <option value="jasa">Jasa Saja</option>
           </select>
         </div>
-        <div class="col">
-          <label>Jumlah Bulan Dibayar:</label>
-          <input type="number" id="jumlah_bulan" name="jumlah_bulan" min="1" value="1">
-          <div class="keterangan" id="keterangan_bulan">
-            Cicilan tersisa: {{ sisa_pinjaman|divisibleby:angsuran_pokok|floatformat:0 }} bulan
-          </div>
-        </div>
       </div>
 
       <div class="row">
+        <div class="col">
+          <label>Jumlah Bulan Dibayar:</label>
+          <input type="number" id="jumlah_bulan" name="jumlah_bulan" min="1" value="1">
+          <div class="keterangan" id="keterangan_bulan"></div>
+        </div>
         <div class="col">
           <label>Jumlah Dibayar:</label>
           <input type="number" id="jumlah_dibayar" name="jumlah_dibayar" required>
@@ -198,57 +262,75 @@
       <div class="row">
         <div class="col">
           <label>Admin Bertugas:</label>
-          <input type="text" value="{{ admin_login.username }} ({{ admin_login.role }})" disabled>
+          <input type="text" value="{{ admin_login.username }} ({{ admin_login.role }})" readonly>
         </div>
       </div>
 
       <div class="form-actions">
-        <a href="{% url 'pinjaman_list' %}" class="btn-cancel">Batal</a>
-        <button type="submit" class="btn-primary">Bayar</button>
+        <a href="{% url 'pinjaman_list' %}" class="btn btn-outline">Batal</a>
+        <button type="submit" class="btn btn-gold">Bayar</button>
       </div>
     </form>
   </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function(){
-    const tipeBayar = document.getElementById("tipe_bayar");
-    const jumlahInput = document.getElementById("jumlah_dibayar");
-    const jumlahBulan = document.getElementById("jumlah_bulan");
-    const angsuranPokok = parseInt(document.getElementById("angsuran_pokok").value || 0);
-    const jasaPersen = parseFloat("{{ pinjaman.jasa_persen }}") / 100;
-    const sisaPinjamanAwal = parseInt("{{ sisa_pinjaman }}") || 0;
-    const keteranganBulan = document.getElementById("keterangan_bulan");
+document.addEventListener("DOMContentLoaded", function(){
+  flatpickr(".datepicker", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d F Y",
+    locale: "id",
+    allowInput: true
+  });
 
-    function hitungBayar() {
-      let totalBayar = 0;
-      let tempSisa = sisaPinjamanAwal;
-      let bulan = parseInt(jumlahBulan.value || 1);
+  const tipeBayar = document.getElementById("tipe_bayar");
+  const jumlahInput = document.getElementById("jumlah_dibayar");
+  const jumlahBulan = document.getElementById("jumlah_bulan");
+  const angsuranPokok = parseInt(document.getElementById("angsuran_pokok").value || 0);
+  const jasaPersen = parseFloat("{{ pinjaman.jasa_persen }}") / 100;
+  const kategoriJasa = "{{ pinjaman.id_kategori_jasa.kategori_jasa|lower }}";
+  const jumlahPinjaman = parseInt("{{ pinjaman.jumlah_pinjaman }}") || 0;
+  const sisaPinjamanAwal = parseInt("{{ sisa_pinjaman }}") || 0;
+  const keteranganBulan = document.getElementById("keterangan_bulan");
 
-      const maxBulan = Math.ceil(tempSisa / angsuranPokok);
-      if (bulan > maxBulan) bulan = maxBulan;
+  function hitungBayar() {
+    let totalBayar = 0;
+    let tempSisa = sisaPinjamanAwal;
+    let bulan = parseInt(jumlahBulan.value || 1);
+    const maxBulan = Math.ceil(tempSisa / angsuranPokok);
 
-      for (let i = 1; i <= bulan; i++) {
-        let jasa = Math.round(tempSisa * jasaPersen);
+    // 🔒 Batasi input bulan agar tidak melebihi sisa cicilan
+    if (bulan > maxBulan) {
+      bulan = maxBulan;
+      jumlahBulan.value = maxBulan;
+    }
+    if (bulan < 1) bulan = 1;
 
-        if (tipeBayar.value === "cicilan") {
-          if (tempSisa - angsuranPokok < 0) break;
-          totalBayar += jasa + angsuranPokok;
-          tempSisa -= angsuranPokok;
-        } else {
-          totalBayar += jasa;
-        }
+    for (let i = 1; i <= bulan; i++) {
+      let jasa = 0;
+      if (kategoriJasa === "flat") {
+        jasa = Math.round(jumlahPinjaman * jasaPersen);
+      } else {
+        jasa = Math.round(tempSisa * jasaPersen);
       }
 
-      jumlahBulan.value = bulan;
-      jumlahInput.value = totalBayar;
-      keteranganBulan.innerText = `Cicilan tersisa: ${Math.ceil(tempSisa/angsuranPokok)} bulan`;
+      if (tipeBayar.value === "cicilan") {
+        if (tempSisa - angsuranPokok < 0) break;
+        totalBayar += jasa + angsuranPokok;
+        tempSisa -= angsuranPokok;
+      } else if (tipeBayar.value === "jasa") {
+        totalBayar += jasa;
+      }
     }
 
-    tipeBayar.addEventListener("change", hitungBayar);
-    jumlahBulan.addEventListener("input", hitungBayar);
+    jumlahInput.value = totalBayar;
+    keteranganBulan.innerText = `Cicilan tersisa: ${Math.ceil(tempSisa / angsuranPokok)} bulan (maksimal ${maxBulan})`;
+  }
 
-    hitungBayar();
-  });
+  tipeBayar.addEventListener("change", hitungBayar);
+  jumlahBulan.addEventListener("input", hitungBayar);
+  hitungBayar();
+});
 </script>
 
 </body>
