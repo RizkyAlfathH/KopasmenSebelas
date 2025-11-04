@@ -117,10 +117,18 @@ class AngsuranListView(APIView):
 
 class ProfilAnggotaView(APIView):
     def get(self, request, nip):
-        # Hilangkan spasi dan ubah ke format yang aman
+        # Hilangkan spasi di input
         clean_nip = nip.strip().replace(" ", "")
 
+        # Cek apakah input kosong
+        if not clean_nip:
+            return Response(
+                {"detail": "NIP atau Nomor Anggota tidak boleh kosong"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         try:
+            # Cari berdasarkan nip atau nomor_anggota (dengan dan tanpa spasi)
             anggota = Anggota.objects.get(
                 Q(nip=nip) | Q(nomor_anggota=nip) |
                 Q(nip=clean_nip) | Q(nomor_anggota=clean_nip)
