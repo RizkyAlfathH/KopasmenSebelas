@@ -9,6 +9,7 @@ from .serializers import (
 from anggota.models import Anggota
 from simpanan.models import Simpanan, Penarikan
 from pinjaman.models import Pinjaman, Angsuran
+from django.db.models import Q
 
 
 # ==========================
@@ -116,8 +117,14 @@ class AngsuranListView(APIView):
 
 class ProfilAnggotaView(APIView):
     def get(self, request, nip):
+        # Hilangkan spasi dan ubah ke format yang aman
+        clean_nip = nip.strip().replace(" ", "")
+
         try:
-            anggota = Anggota.objects.get(nip=nip)
+            anggota = Anggota.objects.get(
+                Q(nip=nip) | Q(nomor_anggota=nip) |
+                Q(nip=clean_nip) | Q(nomor_anggota=clean_nip)
+            )
         except Anggota.DoesNotExist:
             return Response(
                 {"detail": "Anggota tidak ditemukan"},
