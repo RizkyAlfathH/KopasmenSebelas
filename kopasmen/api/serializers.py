@@ -23,7 +23,7 @@ class AnggotaSerializer(serializers.ModelSerializer):
 class ProfilAnggotaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Anggota
-        fields = ["nomor_anggota", "nama", "nip", "email", "alamat", "no_telp", "status"]
+        fields = '__all__' 
         
 class JenisSimpananSerializer(serializers.ModelSerializer):
     class Meta:
