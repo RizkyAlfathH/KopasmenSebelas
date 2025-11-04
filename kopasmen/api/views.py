@@ -116,12 +116,12 @@ class AngsuranListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ProfilAnggotaView(APIView):
-    def get(self, request, nip):
+    def get(self, request, nomor_anggota):
         # Hilangkan spasi di input
-        clean_nip = nip.strip().replace(" ", "")
+        clean_nomor_anggota = nomor_anggota.strip().replace(" ", "")
 
         # Cek apakah input kosong
-        if not clean_nip:
+        if not clean_nomor_anggota:
             return Response(
                 {"detail": "NIP atau Nomor Anggota tidak boleh kosong"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -130,8 +130,8 @@ class ProfilAnggotaView(APIView):
         try:
             # Cari berdasarkan nip atau nomor_anggota (dengan dan tanpa spasi)
             anggota = Anggota.objects.get(
-                Q(nip=nip) | Q(nomor_anggota=nip) |
-                Q(nip=clean_nip) | Q(nomor_anggota=clean_nip)
+                Q(nip=nomor_anggota) | Q(nomor_anggota=nomor_anggota) |
+                Q(nip=clean_nomor_anggota) | Q(nomor_anggota=clean_nomor_anggota)
             )
         except Anggota.DoesNotExist:
             return Response(
@@ -141,3 +141,4 @@ class ProfilAnggotaView(APIView):
 
         serializer = ProfilAnggotaSerializer(anggota)
         return Response(serializer.data, status=status.HTTP_200_OK)
+

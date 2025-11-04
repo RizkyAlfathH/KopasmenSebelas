@@ -12,6 +12,5 @@ urlpatterns = [
     path("<str:nip>/simpanan/", SimpananListView.as_view(), name="simpanan-list"),
     path("<str:nip>/tarik/", PenarikanListView.as_view(), name="penarikan-list"),
     path("<str:nip>/pinjaman/", PinjamanListView.as_view(), name="pinjaman-list"),
-    path("profil/<str:nomor_anggota>/", ProfilAnggotaView.as_view(), name="profil-anggota"),
-
+    path("profil/<str:nomor_anggota>/", ProfilAnggotaView.as_view(), name="profil-anggota")
 ]
