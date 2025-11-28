@@ -422,7 +422,6 @@ def anggota_search(request):
         })
     return JsonResponse({"results": results})
 
-# ------------------------ BAYAR PINJAMAN ------------------------
 def bayar_pinjaman(request, id_pinjaman):
     if not request.session.get('admin_id'):
         return redirect('admin_koperasi:login')
@@ -458,7 +457,6 @@ def bayar_pinjaman(request, id_pinjaman):
     if request.method == "POST":
         tanggal_bayar_raw = request.POST.get("tanggal_bayar")
         tanggal_bayar = parse_date(tanggal_bayar_raw) if tanggal_bayar_raw else None
-
         jumlah_dibayar_raw = request.POST.get("jumlah_dibayar")
         tipe_bayar = request.POST.get("tipe_bayar")  # cicilan / jasa
         jasa_persen_input_raw = request.POST.get("jasa_persen")
@@ -492,18 +490,34 @@ def bayar_pinjaman(request, id_pinjaman):
                 messages.error(request, f"Minimal bayar untuk 1 bulan adalah {angsuran_perbulan_total:,}.")
                 return redirect("bayar_pinjaman", id_pinjaman=pinjaman.id_pinjaman)
 
-            # Catat 1 bulan cicilan
-            Angsuran.objects.create(
-                id_pinjaman=pinjaman,
-                id_admin=admin_login,
-                tanggal_bayar=tanggal_bayar,
-                jumlah_bayar=angsuran_perbulan_total,
-                tipe_bayar="cicilan"
-            )
+            # Jumlah bulan yang bisa dibayar dari total input
+            jumlah_bulan = int(jumlah_dibayar // angsuran_perbulan_total)
+            sisa_bayar = jumlah_dibayar
 
-            # Kelebihan → masuk Simpanan Sukarela
-            kelebihan = jumlah_dibayar - angsuran_perbulan_total
-            if kelebihan > 0:
+            for i in range(jumlah_bulan):
+                # Cek dulu apakah sudah lunas sebelum lanjut
+                total_cicilan_terbayar = Angsuran.objects.filter(
+                    id_pinjaman=pinjaman, tipe_bayar="cicilan"
+                ).count()
+
+                sisa_akhir = jumlah_pinjaman - (Decimal(total_cicilan_terbayar) * angsuran_pokok)
+                if sisa_akhir <= 0:
+                    pinjaman.status = "Lunas"
+                    pinjaman.save()
+                    break  # STOP, jangan lanjut potong simpanan
+
+                # Catat cicilan
+                Angsuran.objects.create(
+                    id_pinjaman=pinjaman,
+                    id_admin=admin_login,
+                    tanggal_bayar=tanggal_bayar,
+                    jumlah_bayar=angsuran_perbulan_total,
+                    tipe_bayar="cicilan"
+                )
+                sisa_bayar -= angsuran_perbulan_total
+
+            # Jika masih ada kelebihan setelah semua lunas → masuk Simpanan Sukarela
+            if sisa_bayar > 0:
                 try:
                     jenis_sukarela = JenisSimpanan.objects.get(nama_jenis__iexact="Simpanan Sukarela")
                 except JenisSimpanan.DoesNotExist:
@@ -514,7 +528,7 @@ def bayar_pinjaman(request, id_pinjaman):
                     admin=admin_login,
                     jenis_simpanan=jenis_sukarela,
                     tanggal_menyimpan=tanggal_bayar,
-                    jumlah_menyimpan=kelebihan
+                    jumlah_menyimpan=sisa_bayar
                 )
 
         # ---------------- PEMBAYARAN JASA ----------------
@@ -564,9 +578,13 @@ def cek_auto_sukarela_ke_pinjaman(pinjaman, admin_login):
     bulan_ini = today.month
     tahun_ini = today.year
 
-    # >>> Tambahan ini supaya pinjaman baru bulan ini tidak langsung auto bayar <<<
+    # Cegah auto bayar untuk pinjaman baru bulan ini
     if pinjaman.tanggal_meminjam.month == bulan_ini and pinjaman.tanggal_meminjam.year == tahun_ini:
-        return  # pinjaman baru bulan ini, skip auto pembayaran
+        return
+
+    # Jangan lanjut kalau sudah lunas
+    if pinjaman.status.lower() == "lunas":
+        return
 
     angsuran_pokok = Decimal(pinjaman.angsuran_per_bulan or 0)
     jasa_persen = Decimal(pinjaman.jasa_persen or 0)
@@ -577,7 +595,9 @@ def cek_auto_sukarela_ke_pinjaman(pinjaman, admin_login):
     ).count()
     sisa_pinjaman = Decimal(pinjaman.jumlah_pinjaman) - (cicilan_terbayar * angsuran_pokok)
     if sisa_pinjaman <= 0:
-        return  # Sudah lunas
+        pinjaman.status = "Lunas"
+        pinjaman.save()
+        return
 
     # Hitung jasa bulan ini
     if pinjaman.id_kategori_jasa.kategori_jasa.lower() == "turunan":
@@ -596,7 +616,7 @@ def cek_auto_sukarela_ke_pinjaman(pinjaman, admin_login):
     ).exists()
 
     if sudah_bayar_bulan_ini:
-        return  # Sudah dicatat, tidak perlu auto bayar
+        return
 
     # Ambil saldo sukarela
     saldo_sukarela = Simpanan.objects.filter(
@@ -604,8 +624,8 @@ def cek_auto_sukarela_ke_pinjaman(pinjaman, admin_login):
         jenis_simpanan__nama_jenis__iexact="Simpanan Sukarela"
     ).aggregate(total=Sum("jumlah_menyimpan"))["total"] or Decimal("0")
 
+    # Kalau saldo cukup → auto bayar, kalau tidak cukup → skip
     if saldo_sukarela >= total_bulan_ini:
-        # Ambil object jenis sukarela
         try:
             jenis_sukarela = JenisSimpanan.objects.get(nama_jenis__iexact="Simpanan Sukarela")
         except JenisSimpanan.DoesNotExist:
@@ -628,6 +648,15 @@ def cek_auto_sukarela_ke_pinjaman(pinjaman, admin_login):
             jumlah_bayar=total_bulan_ini,
             tipe_bayar="cicilan"
         )
+
+        # Update status pinjaman kalau sudah lunas
+        total_akhir = Angsuran.objects.filter(
+            id_pinjaman=pinjaman, tipe_bayar="cicilan"
+        ).count()
+        sisa = Decimal(pinjaman.jumlah_pinjaman) - (total_akhir * angsuran_pokok)
+        if sisa <= 0:
+            pinjaman.status = "Lunas"
+            pinjaman.save()
 
 def detail_pembayaran(request, pembayaran_id):
     if not request.session.get('admin_id'):

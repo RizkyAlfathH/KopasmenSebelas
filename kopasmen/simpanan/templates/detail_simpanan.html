@@ -2,179 +2,323 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Detail Simpanan {{ simpanan.anggota.nama }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KOPASMEN - Detail Simpanan</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/phosphor-icons"></script>
+  <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      display: flex;
+    * { font-family: 'Poppins', sans-serif; box-sizing: border-box; }
+    body { background: #fafafa; color: #333; margin: 0; display: flex; }
+    a { text-decoration: none; color: inherit; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+      padding: 20px 0;
+      position: fixed;
+      height: 100vh;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.08);
     }
+
+    /* Main */
     .main-content {
-      margin-left: 280px;
-      padding: 30px;
+      margin-left: 260px;
+      padding: 35px;
       flex: 1;
     }
-    .content-card {
-      background: white;
+
+    h1 { color: #4A2C2A; margin-bottom: 25px; }
+    h2 { color: #4A2C2A; font-size: 20px; margin: 25px 0 15px; }
+
+    .card {
+      background: #fff;
       border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-      margin-bottom: 30px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      margin-bottom: 22px;
     }
-    h1, h2 { margin-bottom: 20px; color: #4A2C2A; }
-    .detail-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px 30px;
-      margin-bottom: 20px;
-    }
-    .detail-item {
-      background: #fafafa;
-      border-radius: 8px;
-      padding: 15px 20px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    }
-    .detail-item .label {
-      font-size: 13px;
-      color: #777;
+
+    .row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; }
+    .col { flex: 1; min-width: 220px; }
+
+    label {
+      display: block;
+      font-weight: 600;
       margin-bottom: 5px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .detail-item .value {
-      font-size: 16px;
-      font-weight: bold;
-      color: #333;
-    }
-    .detail-item.highlight {
-      background: #fff8e1;
-      border: 1px solid #ffd54f;
-    }
-    .back-btn {
-      display: inline-block; margin-top: 20px;
-      background: #FFD700; padding: 8px 14px;
-      border-radius: 6px; text-decoration: none;
-      color: #333; font-weight: bold;
-    }
-    .back-btn:hover { background: #e6c200; }
-
-    /* Search input */
-    .filter-box {
-      display: flex; gap: 10px; margin-bottom: 15px;
-    }
-    .filter-box input {
-      padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;
+      color: #4A2C2A;
     }
 
-    .transaction-list {
-      list-style: none; padding: 0; margin: 0;
+    input[readonly] {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #fffefc;
+      font-size: 14px;
     }
-    .transaction-item {
-      padding: 12px 15px; background: #fafafa; margin-bottom: 8px;
-      border-radius: 6px; display: flex; justify-content: space-between;
+
+    /* Filter tanggal */
+    form.search-form {
+      margin-bottom: 20px;
+      display: flex;
       align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      gap: 10px;
+      flex-wrap: wrap;
     }
-    .transaction-item span { display: inline-block; width: 30%; text-align: center; }
-    .empty-state { text-align: center; font-style: italic; color: #999; }
+
+    form.search-form label {
+      font-weight: 600;
+      color: #4A2C2A;
+      font-size: 14px;
+    }
+
+    .datepicker-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .datepicker-wrapper input.datepicker {
+      padding: 6px 36px 6px 10px; /* tambah ruang kanan untuk ikon */
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #fff;
+      font-size: 14px;
+      width: 180px;
+    }
+
+    /* Ikon kalender di kanan input */
+    .datepicker-wrapper .calendar-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #4A2C2A;
+      font-size: 18px;
+      pointer-events: none;
+    }
+
+    /* Flatpickr (tampilan mirip AdminLTE) */
+    .flatpickr-calendar {
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .flatpickr-day {
+        border-radius: 6px;
+    }
+
+    .flatpickr-day.selected {
+        background: #FFD700;
+        border-color: #FFD700;
+        color: #4A2C2A;
+    }
+
+    .flatpickr-day:hover {
+        background: #fff3cd;
+    }
+
+    form.search-form button,
+    form.search-form a {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    form.search-form button {
+      background: #FFD700;
+      color: #4A2C2A;
+    }
+    form.search-form button:hover {
+      background: #e6c200;
+    }
+
+    form.search-form a {
+      background: transparent;
+      border: 1px solid #ccc;
+      color: #333;
+      text-decoration: none;
+    }
+    form.search-form a:hover {
+      background: #fff4b2;
+    }
+
+    /* Riwayat transaksi */
+    .transaction-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      border: 1px solid #eee;
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      transition: 0.2s;
+    }
+
+    .transaction-card:hover {
+      background: #fff9e6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .transaction-info { font-size: 14px; }
+
+    .transaction-actions {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .transaction-actions strong {
+      font-size: 14px;
+      margin-right: 15px; /* jarak tambahan di sini */
+    }
+
+    .transaction-actions strong { font-size: 14px; }
+
+    .transaction-actions .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 3px;
+      color: #fff;
+      font-size: 18px;
+      transition: 0.2s;
+      text-decoration: none;
+    }
+
+    .action-detail { background: #00aeff; }
+    .action-download { background: #28a745; }
+
+    .action-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 25px;
+      color: #888;
+      font-style: italic;
+    }
+
+    .btn-back-container {
+      text-align: right;
+      margin-top: 25px;
+    }
+
+    .btn-gold {
+      background: #FFD700;
+      color: #4A2C2A;
+      padding: 6px 14px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    .btn-gold:hover { background: #e6c200; }
   </style>
 </head>
 <body>
-  {% include "partials/sidebar.html" %}
+  <div class="sidebar">
+    {% include "partials/sidebar.html" %}
+  </div>
 
   <div class="main-content">
-    <!-- Detail Simpanan -->
-    <div class="content-card">
+    <div class="card">
       <h1>Detail Simpanan</h1>
-      <div class="detail-grid">
-        <div class="detail-item">
-          <div class="label">Nomor Anggota</div>
-          <div class="value">{{ simpanan.anggota.nomor_anggota }}</div>
+      <div class="row">
+        <div class="col">
+          <label>Nomor Anggota:</label>
+          <input type="text" readonly value="{{ simpanan.anggota.nomor_anggota }}">
         </div>
-        <div class="detail-item">
-          <div class="label">Nama Anggota</div>
-          <div class="value">{{ simpanan.anggota.nama }}</div>
-        </div>
-        <div class="detail-item">
-          <div class="label">Jenis Simpanan</div>
-          <div class="value">{{ simpanan.jenis_simpanan }}</div>
-        </div>
-        <div class="detail-item">
-            <div class="label">Tanggal Membuat Tabungan</div>
-            <div class="value">
-              {% if simpanan.anggota.tanggal_daftar %}
-                {{ simpanan.anggota.tanggal_daftar|date:"d M Y" }}
-              {% else %}
-                -
-              {% endif %}
-            </div>
-          </div>
-        <div class="detail-item">
-          <div class="label">Saldo {{ simpanan.jenis_simpanan }}</div>
-          <div class="value">Rp {{ saldo_jenis|floatformat:0 }}</div>
+        <div class="col">
+          <label>Nama Anggota:</label>
+          <input type="text" readonly value="{{ simpanan.anggota.nama }}">
         </div>
       </div>
-      <a href="{% url 'simpanan_anggota' simpanan.anggota.nomor_anggota %}" class="back-btn">← Kembali</a>
+
+      <div class="row">
+        <div class="col">
+          <label>Jenis Simpanan:</label>
+          <input type="text" readonly value="{{ simpanan.jenis_simpanan }}">
+        </div>
+        <div class="col">
+          <label>Tanggal Membuat Tabungan:</label>
+          <input type="text" readonly value="{% if simpanan.anggota.tanggal_daftar %}{{ simpanan.anggota.tanggal_daftar|date:'d M Y' }}{% else %}-{% endif %}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Saldo {{ simpanan.jenis_simpanan }}:</label>
+          <input type="text" readonly value="Rp. {{ saldo_jenis|floatformat:0 }}">
+        </div>
+      </div>
     </div>
 
-    <!-- Riwayat Transaksi dengan search per tanggal -->
-    <div class="content-card">
-      <h2>Riwayat Transaksi {{ simpanan.jenis_simpanan }}</h2>
-
-      <div class="filter-box">
-        <input type="date" id="filterTanggal" placeholder="Cari tanggal">
+    <h2>Riwayat Transaksi {{ simpanan.jenis_simpanan }}</h2>
+    <form method="GET" class="search-form">
+      <label for="filterTanggal">Cari Tanggal:</label>
+      <div class="datepicker-wrapper">
+        <input type="text" id="filterTanggal" name="tanggal" class="datepicker" value="{{ request.GET.tanggal }}" placeholder="Pilih tanggal">
+        <i class="ph-calendar calendar-icon"></i>
       </div>
+      <button type="submit">Cari</button>
+      {% if request.GET.tanggal %}
+        <a href="{% url 'detail_simpanan' simpanan.id_simpanan %}">Reset</a>
+      {% endif %}
+    </form>
 
-      <ul class="transaction-list" id="transactionList">
-          {% for h in history %}
-          <li class="transaction-item" data-tanggal="{{ h.tgl|date:'Y-m-d' }}">
-            <span>{{ h.tgl|date:"d M Y" }}</span>
-            <span>{{ h.jenis_trans }}</span>
-            <span>Rp {{ h.jumlah|floatformat:0 }}</span>
-            <span>
-              <a href="{% url 'detail_transaksi' h.pk %}">Detail</a>|
-              <a href="{% url 'download_kwitansi' h.tipe h.pk %}" class="btn btn-sm btn-primary">
-                  Cetak Kwitansi
-              </a>
-            </span>
-          </li>
-          {% endfor %}
-        </ul>
+    {% if history %}
+      {% for h in history %}
+        <div class="transaction-card" data-tanggal="{{ h.tgl|date:'Y-m-d' }}">
+          <div class="transaction-info">
+            <strong>{{ h.jenis_trans }}</strong><br>
+            <small>{{ h.tgl|date:"d M Y" }}</small>
+          </div>
+          <div class="transaction-actions">
+            <strong>Rp {{ h.jumlah|floatformat:0 }}</strong>
+            <a href="{% url 'detail_transaksi' h.pk %}" class="action-btn action-detail" title="Lihat Detail">
+              <i class="ph-bold ph-eye"></i>
+            </a>
+            <a href="{% url 'download_kwitansi' h.tipe h.pk %}" class="action-btn action-download" title="Unduh Kwitansi">
+              <i class="ph-bold ph-download-simple"></i>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="card no-data">Belum ada transaksi.</div>
+    {% endif %}
+
+    <div class="btn-back-container">
+      <a href="{% url 'simpanan_anggota' simpanan.anggota.nomor_anggota %}" class="btn-gold">Kembali</a>
     </div>
   </div>
 
   <script>
-    const filterTanggal = document.getElementById("filterTanggal");
-    const transactionList = document.getElementById("transactionList");
-    const items = Array.from(transactionList.getElementsByClassName("transaction-item"));
-
-    function filterTransactions() {
-      const tanggalVal = filterTanggal.value;
-      let visibleCount = 0;
-
-      items.forEach(item => {
-        const itemTanggal = item.dataset.tanggal;
-        const show = !tanggalVal || itemTanggal === tanggalVal;
-        item.style.display = show ? "flex" : "none";
-        if (show) visibleCount++;
+  document.addEventListener("DOMContentLoaded", function() {
+      flatpickr(".datepicker", {
+          dateFormat: "Y-m-d",
+          altInput: true,
+          altFormat: "d F Y",
+          locale: "id",
+          allowInput: true
       });
-
-      // Tampilkan empty-state kalau tidak ada yang match
-      let empty = document.querySelector(".empty-state");
-      if (visibleCount === 0) {
-        if (!empty) {
-          const li = document.createElement("li");
-          li.className = "empty-state";
-          li.textContent = "Tidak ada transaksi yang sesuai filter.";
-          transactionList.appendChild(li);
-        }
-      } else {
-        if (empty) empty.remove();
-      }
-    }
-
-    filterTanggal.addEventListener("change", filterTransactions);
+  });
   </script>
 </body>
 </html>

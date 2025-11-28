@@ -78,18 +78,18 @@ class ResetPasswordView(APIView):
 # Simpanan & Penarikan
 # ==========================
 class SimpananListView(APIView):
-    def get(self, request, nip):
+    def get(self, request, nomor_anggota):
         simpanan = Simpanan.objects.filter(
-            anggota__nip=nip
+            anggota__nomor_anggota=nomor_anggota
         ).order_by('-tanggal_menyimpan')
         serializer = SimpananSerializer(simpanan, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class PenarikanListView(APIView):
-    def get(self, request, nip):
+    def get(self, request, nomor_anggota):
         penarikan = Penarikan.objects.filter(
-            anggota__nip=nip
+            anggota__nomor_anggota=nomor_anggota
         ).order_by('-tanggal_penarikan')
         serializer = PenarikanSerializer(penarikan, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -99,9 +99,9 @@ class PenarikanListView(APIView):
 # Pinjaman & Angsuran
 # ==========================
 class PinjamanListView(APIView):
-    def get(self, request, nip):
+    def get(self, request, nomor_anggota):
         pinjaman = Pinjaman.objects.filter(
-            nomor_anggota__nip=nip
+            nomor_anggota__nomor_anggota=nomor_anggota
         ).order_by('-tanggal_meminjam')
         serializer = PinjamanSerializer(pinjaman, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -114,6 +114,7 @@ class AngsuranListView(APIView):
         ).order_by('-tanggal_bayar')
         serializer = AngsuranSerializer(angsuran, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class ProfilAnggotaView(APIView):
     def get(self, request, nomor_anggota):

@@ -77,21 +77,3 @@ class Penarikan(models.Model):
 
     def __str__(self):
         return f"{self.jenis_simpanan} - {self.anggota.nama}"
-
-class HistoryTabungan(models.Model):
-    id_history = models.BigAutoField(primary_key=True)
-    anggota = models.ForeignKey(Anggota, on_delete=models.CASCADE)
-    jenis_simpanan = models.ForeignKey(JenisSimpanan, on_delete=models.SET_NULL, null=True, blank=True)
-    tanggal = models.DateField()
-    jenis_transaksi = models.CharField(
-        max_length=10,
-        choices=[('SETOR', 'Setoran'), ('TARIK', 'Penarikan')]
-    )
-    jumlah = models.DecimalField(max_digits=18, decimal_places=2)
-
-    class Meta:
-        db_table = "History_Tabungan"
-        ordering = ['-tanggal']
-
-    def __str__(self):
-        return f"{self.anggota.nama} - {self.jenis_transaksi} Rp{self.jumlah}"

@@ -90,13 +90,24 @@ WSGI_APPLICATION = 'kopasmen.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'IDN2306510553_kopasmen11',
-        'USER': 'IDN2306510553_kopasmen11',
-        'PASSWORD': 'Kopasmen11_user',  
+        'NAME': 'kopasmen',
+        'USER': 'root',
+        'PASSWORD': '',  
         'HOST': 'localhost',
         'PORT': '3306',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'IDN2306510553_kopasmen11',
+#         'USER': 'IDN2306510553_kopasmen11',
+#         'PASSWORD': 'Kopasmen11_user',  
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

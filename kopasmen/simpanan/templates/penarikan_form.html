@@ -1,132 +1,212 @@
+{% load widget_tweaks %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Form Penarikan</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<title>KOPASMEN - Penarikan Simpanan</title>
 
-        .main-content {
-            margin-left: 280px; /* offset sidebar */
-            margin-top: 60px;  /* offset navbar */
-            padding: 30px;
-            min-height: calc(100vh - 60px);
-            background-color: #f5f5f5;
-        }
+<!-- Font & Icon -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/phosphor-icons"></script>
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
 
-        .content-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-            animation: fadeIn 0.5s ease;
-            max-width: 600px;
-            margin: auto;
-        }
+<style>
+    * {
+        font-family: 'Poppins', sans-serif;
+        box-sizing: border-box;
+    }
 
-        h1 {
-            margin-bottom: 20px;
-            color: #4A2C2A;
-            font-size: 22px;
-            border-bottom: 2px solid #FFD700;
-            padding-bottom: 10px;
-        }
+    body {
+        background: #f5f5f5;
+        margin: 0;
+        display: flex;
+    }
 
-        form p {
-            margin-bottom: 15px;
-        }
+    /* Sidebar */
+    .sidebar {
+        width: 280px;
+        background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+        padding: 20px 0;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
 
-        form label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 6px;
-            color: #333;
-        }
+    /* Main content */
+    .main-content {
+        margin-left: 280px;
+        padding: 30px;
+        flex: 1;
+    }
 
-        form input,
-        form select,
-        form textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    }
 
-        form input:focus,
-        form select:focus,
-        form textarea:focus {
-            border-color: #FFD700;
-            outline: none;
-            box-shadow: 0 0 4px rgba(255, 215, 0, 0.6);
-        }
+    h1 {
+        margin-bottom: 25px;
+        color: #4A2C2A;
+        font-size: 22px;
+        border-bottom: 2px solid #FFD700;
+        padding-bottom: 10px;
+    }
 
-        .form-actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 15px;
-        }
+    /* === GRID 2 KOLOM === */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px 40px;
+    }
 
-        button[type="submit"] {
-            background: #FFD700;
-            border: none;
-            color: #333;
-            font-weight: bold;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 6px;
+        color: #4A2C2A;
+        font-size: 14px;
+    }
 
-        button[type="submit"]:hover {
-            background: #e6c200;
-            transform: translateY(-2px);
-        }
+    input.form-control, select.form-control {
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 14px;
+        padding: 8px 12px;
+        transition: 0.2s;
+    }
 
-        a.cancel-btn {
-            background: #f2f2f2;
-            color: #333;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            transition: all 0.3s ease;
-        }
+    input:focus, select:focus {
+        border-color: #FFD700;
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+        outline: none;
+    }
 
-        a.cancel-btn:hover {
-            background: #e0e0e0;
-        }
+    .form-actions {
+        margin-top: 35px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    .btn-simpan {
+        background: #FFD700;
+        color: #4A2C2A;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 13px;
+        transition: 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-simpan:hover { background: #e6c200; }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid #ccc;
+        color: #4A2C2A;
+        font-weight: 500;
+        border-radius: 6px;
+        padding: 6px 14px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .btn-outline:hover { background: #fff9d4; }
+
+    /* Flatpickr (tampilan mirip AdminLTE) */
+    .flatpickr-calendar {
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .flatpickr-day {
+        border-radius: 6px;
+    }
+
+    .flatpickr-day.selected {
+        background: #FFD700;
+        border-color: #FFD700;
+        color: #4A2C2A;
+    }
+
+    .flatpickr-day:hover {
+        background: #fff3cd;
+    }
+</style>
 </head>
+
 <body>
-    {% include "partials/sidebar.html" %}
+{% include "partials/sidebar.html" %}
 
-    <div class="main-content">
+<div class="main-content">
+    <div class="form-card">
+        <h1>Penarikan Simpanan</h1>
 
+        <form method="post">
+            {% csrf_token %}
 
-        <div class="content-card">
-            <h1>Penarikan Simpanan</h1>
+            <div class="form-grid">
 
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <div class="form-actions">
-                    <button type="submit">💸 Tarik</button>
-                    <a href="{% url 'simpanan_anggota' anggota.nomor_anggota %}" class="cancel-btn">❌ Batal</a>
+                <!-- Anggota -->
+                <div>
+                    <label>Nama Anggota</label>
+                    <input type="text" value="{{ anggota.nama }}" class="form-control" disabled>
                 </div>
-            </form>
-        </div>
+
+                <div>
+                    <label>Nomor Anggota</label>
+                    <input type="text" value="{{ anggota.nomor_anggota }}" class="form-control" disabled>
+                </div>
+
+                <!-- Field Form Django -->
+                <div>
+                    <label for="id_tanggal_penarikan">Tanggal Penarikan</label>
+                    {{ form.tanggal_penarikan|add_class:"form-control datepicker" }}
+                </div>
+
+                <div>
+                    <label for="id_jumlah_penarikan">Jumlah Penarikan</label>
+                    {{ form.jumlah_penarikan|add_class:"form-control"|attr:"placeholder:Masukkan jumlah" }}
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'simpanan_anggota' anggota.nomor_anggota %}" class="btn-outline">
+                    Batal
+                </a>
+                <button type="submit" class="btn-simpan">
+                    <i class="ph-caret-up-bold"></i> Tarik
+                </button>
+            </div>
+        </form>
     </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+flatpickr(".datepicker", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d F Y",
+    locale: "id",
+    allowInput: true
+});
+</script>
+
 </body>
 </html>

@@ -1,123 +1,262 @@
+{% load widget_tweaks %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Simpanan</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<title>KOPASMEN - Edit Simpanan</title>
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            display: flex;
-            min-height: 100vh;
-        }
+<!-- Font & Icon -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/phosphor-icons"></script>
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
 
-        /* Sidebar styling */
-        .sidebar {
-            width: 260px;
-            background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
-            padding: 20px 0;
-            position: fixed;
-            height: 100vh;
-            left: 0;
-            top: 0;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
+<style>
+* { font-family: 'Poppins', sans-serif; box-sizing: border-box; }
+body { background: #f5f5f5; margin: 0; display: flex; }
 
-        /* Main content */
-        .main-content {
-            margin-left: 260px;
-            padding: 30px;
-            flex: 1;
-        }
+.sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
 
-        .card {
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            max-width: 600px;
-            margin: 0 auto;
-        }
+.main-content {
+    margin-left: 280px;
+    padding: 30px;
+    flex: 1;
+}
 
-        h2 {
-            margin-bottom: 20px;
-            color: #4A2C2A;
-            font-size: 22px;
-            border-bottom: 2px solid #FFD700;
-            padding-bottom: 8px;
-        }
+.form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+}
 
-        form p {
-            margin-bottom: 15px;
-        }
+h1 { margin-bottom: 25px; color: #4A2C2A; }
 
-        form label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #333;
-        }
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px 40px;
+}
 
-        form input, form select, form textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-            transition: border 0.3s, box-shadow 0.3s;
-        }
+label { display: block; font-weight: 500; margin-bottom: 6px; color: #4A2C2A; font-size: 14px; }
 
-        form input:focus, form select:focus, form textarea:focus {
-            border-color: #FFD700;
-            box-shadow: 0 0 5px rgba(255,215,0,0.5);
-            outline: none;
-        }
+input.form-control, select.form-control {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    padding: 8px 12px;
+    transition: 0.2s;
+}
 
-        .btn-success {
-            background-color: #28a745;
-            color: white;
-            padding: 12px 18px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: bold;
-            transition: background 0.3s, transform 0.2s;
-        }
+input:focus, select:focus {
+    border-color: #FFD700;
+    box-shadow: 0 0 5px rgba(255,215,0,0.4);
+    outline: none;
+}
 
-        .btn-success:hover {
-            background-color: #218838;
-            transform: scale(1.03);
-        }
+select.form-control {
+    appearance: none;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='gray' class='bi bi-caret-down-fill' viewBox='0 0 16 16'><path d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.658l-4.796 5.482a1 1 0 0 1-1.506 0z'/></svg>") no-repeat right 12px center;
+    background-color: #fff;
+    padding-right: 35px;
+}
 
-        .btn-success:active {
-            transform: scale(0.98);
-        }
-    </style>
+.form-actions { margin-top: 35px; display: flex; justify-content: flex-end; gap: 10px; }
+
+.btn-simpan {
+    background: #FFD700;
+    color: #4A2C2A;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-simpan:hover { background: #e6c200; }
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid #ccc;
+    color: #4A2C2A;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s ease;
+    text-decoration: none;
+}
+.btn-outline:hover { background: #fff9d4; }
+
+.autocomplete-wrapper { position: relative; }
+#anggota-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    max-height: 180px;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    margin: 2px 0 0 0;
+    z-index: 9999;
+    display: none;
+}
+#anggota-suggestions li {
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+#anggota-suggestions li:hover { background: #f5f5f5; }
+
+.flatpickr-calendar { border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); font-family: 'Poppins', sans-serif; }
+.flatpickr-day { border-radius: 6px; }
+.flatpickr-day.selected { background: #FFD700; border-color: #FFD700; color: #4A2C2A; }
+.flatpickr-day:hover { background: #fff3cd; }
+</style>
 </head>
-<body>
-  
-    <div class="sidebar">
-        {% include "partials/sidebar.html" %}
-    </div>
 
-    <div class="main-content">
-        <div class="card">
-            <h2>Edit Simpanan</h2>
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn-success">Update</button>
-            </form>
-        </div>
+<body>
+{% include "partials/sidebar.html" %}
+
+<div class="main-content">
+    <div class="form-card">
+        <h1>Edit Simpanan</h1>
+
+        <form method="post" id="edit-simpanan-form">
+            {% csrf_token %}
+
+            <div class="form-grid">
+                <div>
+                    <label>Nomor Anggota - Nama</label>
+                    <input type="text" class="form-control" value="{{ anggota.nomor_anggota }} - {{ anggota.nama }}" readonly>
+                </div>
+
+                <div>
+                    <label>Admin</label>
+                    <input type="text" class="form-control" value="{{ username }}" readonly>
+                    {{ form.admin }}
+                </div>
+
+                <div>
+                    <label>Tanggal Menyimpan</label>
+                    <div style="position:relative;">
+                        {{ form.tanggal_menyimpan|add_class:"form-control datepicker"|attr:"autocomplete:off" }}
+                        <i class="ph-calendar" style="position:absolute;right:12px;top:10px;color:#888;"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <label>Simpanan Pokok</label>
+                    {{ form.simpanan_pokok|add_class:"form-control" }}
+                </div>
+
+                <div>
+                    <label>Simpanan Wajib</label>
+                    {{ form.simpanan_wajib|add_class:"form-control" }}
+                </div>
+
+                <div>
+                    <label>Simpanan Sukarela</label>
+                    {{ form.simpanan_sukarela|add_class:"form-control" }}
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'daftar_simpanan' %}" class="btn-outline">Batal</a>
+                <button type="submit" class="btn-simpan">Simpan</button>
+            </div>
+        </form>
     </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("anggota-autocomplete");
+    const suggestionsBox = document.getElementById("anggota-suggestions");
+    const anggotaId = document.getElementById("anggota-id");
+    const form = document.getElementById("edit-simpanan-form");
+
+    input.addEventListener("input", function () {
+        const query = this.value.trim();
+        if (query.length < 1) { suggestionsBox.innerHTML = ""; suggestionsBox.style.display = "none"; return; }
+        fetch(`/simpanan/autocomplete/anggota/?term=${query}`)
+        .then(res => res.json())
+        .then(data => {
+            suggestionsBox.innerHTML = "";
+            if (data.length > 0) {
+                suggestionsBox.style.display = "block";
+                data.forEach(item => {
+                    const li = document.createElement("li");
+                    li.textContent = `${item.nomor_anggota}- ${item.nama}`;
+                    li.addEventListener("click", function () {
+                        input.value = `${item.nomor_anggota}- ${item.nama}`;
+                        anggotaId.value = item.id;
+                        suggestionsBox.innerHTML = "";
+                        suggestionsBox.style.display = "none";
+                    });
+                    suggestionsBox.appendChild(li);
+                });
+            } else { suggestionsBox.style.display = "none"; }
+        });
+    });
+
+    document.addEventListener("click", function(e) {
+        if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
+            suggestionsBox.style.display = "none";
+        }
+    });
+
+    form.addEventListener("submit", function(e){
+        if (!anggotaId.value){
+            e.preventDefault();
+            alert("⚠️ Harap pilih anggota dari daftar autocomplete!");
+            input.focus();
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Flatpickr dengan bulan nama
+        flatpickr(".datepicker", {
+            altInput: true,
+            altFormat: "d F Y",  // Contoh: 10 November 2025
+            dateFormat: "Y-m-d",
+            locale: "id",
+            allowInput: true,
+            defaultDate: "{{ form.initial.tanggal_menyimpan|date:'Y-m-d' }}"
+        });
+
+        // Hanya angka bulat di input nominal
+        ['simpanan_pokok','simpanan_wajib','simpanan_sukarela'].forEach(function(field){
+            let input = document.getElementById("id_" + field);
+            if(input){
+                input.addEventListener("input", function(){
+                    // Hanya angka, hapus semua karakter non-digit
+                    this.value = this.value.replace(/[^0-9]/g,'');
+                });
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>

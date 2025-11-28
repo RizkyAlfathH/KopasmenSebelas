@@ -14,14 +14,13 @@ from django.utils.dateparse import parse_date
 from django.http import HttpResponse
 from reportlab.lib.pagesizes import A4
 from django.template.loader import get_template
-from weasyprint import HTML
-from django.template.loader import render_to_string
-from django.http import HttpResponse
+from xhtml2pdf import pisa
 import os
 from django.conf import settings
 from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
 from num2words import num2words
+from django.utils import timezone
 
 
 def tambah_simpanan(request):
@@ -68,7 +67,7 @@ def autocomplete_anggota(request):
             Q(nama__icontains=term) | Q(nip__icontains=term)
         )[:10]
         results = [
-            {"id": a.pk, "nama": a.nama, "nip": a.nip}
+            {"id": a.pk, "nama": a.nama, "nomor_anggota": a.nomor_anggota}
             for a in anggotas
         ]
     return JsonResponse(results, safe=False)
@@ -227,70 +226,64 @@ def edit_simpanan(request, nomor_anggota):
     if not request.session.get('admin_id'):
         return redirect('admin_koperasi:login')
 
-    role = request.session.get('admin_role')
+    admin_id = request.session.get('admin_id')
+    admin_login = get_object_or_404(Admin, pk=admin_id)
     username = request.session.get('admin_username')
+    role = request.session.get('admin_role')
 
     anggota = get_object_or_404(Anggota, nomor_anggota=nomor_anggota)
-    simpanan = Simpanan.objects.filter(anggota=anggota).order_by('-tanggal_menyimpan')
 
-    # Ambil jenis simpanan dari DB
-    jenis_pokok = get_object_or_404(JenisSimpanan, nama_jenis="Simpanan Pokok")
-    jenis_wajib = get_object_or_404(JenisSimpanan, nama_jenis="Simpanan Wajib")
-    jenis_sukarela = get_object_or_404(JenisSimpanan, nama_jenis="Simpanan Sukarela")
+    # Ambil simpanan terakhir tiap jenis
+    simpanan_terakhir = {}
+    for jenis in ["Simpanan Pokok", "Simpanan Wajib", "Simpanan Sukarela"]:
+        s = Simpanan.objects.filter(
+            anggota=anggota,
+            jenis_simpanan__nama_jenis=jenis
+        ).order_by('-tanggal_menyimpan').first()
+        simpanan_terakhir[jenis] = s.jumlah_menyimpan if s else 0
 
     if request.method == "POST":
-        form = EditSimpananForm(request.POST)
+        form = EditSimpananForm(request.POST, admin_login=admin_login)
         if form.is_valid():
             cd = form.cleaned_data
-
-            if cd['simpanan_pokok']:
-                Simpanan.objects.create(
-                    anggota=anggota,
-                    admin=cd['admin'],
-                    jenis_simpanan=jenis_pokok,
-                    tanggal_menyimpan=cd['tanggal_menyimpan'],
-                    jumlah_menyimpan=cd['simpanan_pokok'],
-                )
-
-            if cd['simpanan_wajib']:
-                Simpanan.objects.create(
-                    anggota=anggota,
-                    admin=cd['admin'],
-                    jenis_simpanan=jenis_wajib,
-                    tanggal_menyimpan=cd['tanggal_menyimpan'],
-                    jumlah_menyimpan=cd['simpanan_wajib'],
-                )
-
-            if cd['simpanan_sukarela']:
-                Simpanan.objects.create(
-                    anggota=anggota,
-                    admin=cd['admin'],
-                    jenis_simpanan=jenis_sukarela,
-                    tanggal_menyimpan=cd['tanggal_menyimpan'],
-                    jumlah_menyimpan=cd['simpanan_sukarela'],
-                )
-
-            # Ambil simpanan terakhir untuk redirect
+            jenis_mapping = {
+                "Simpanan Pokok": cd['simpanan_pokok'],
+                "Simpanan Wajib": cd['simpanan_wajib'],
+                "Simpanan Sukarela": cd['simpanan_sukarela']
+            }
+            for jenis_nama, jumlah in jenis_mapping.items():
+                if jumlah is not None:
+                    jenis_obj = get_object_or_404(JenisSimpanan, nama_jenis=jenis_nama)
+                    Simpanan.objects.create(
+                        anggota=anggota,
+                        admin=admin_login,
+                        jenis_simpanan=jenis_obj,
+                        tanggal_menyimpan=cd['tanggal_menyimpan'],
+                        jumlah_menyimpan=jumlah,
+                    )
             last_simpanan = Simpanan.objects.filter(anggota=anggota).order_by('-id_simpanan').first()
             messages.success(request, "Data simpanan berhasil diperbarui.")
             return redirect("detail_simpanan", id_simpanan=last_simpanan.id_simpanan)
     else:
-        first_simpanan = simpanan.first()
-        form = EditSimpananForm(initial={
-            "anggota": anggota.pk,
-            "admin": first_simpanan.admin if first_simpanan else None,
-            "tanggal_menyimpan": first_simpanan.tanggal_menyimpan if first_simpanan else None,
-        })
+        form = EditSimpananForm(
+            initial={
+                'anggota': anggota.pk,
+                'admin': admin_login.pk,
+                'tanggal_menyimpan': timezone.now().date(),
+                'simpanan_pokok': simpanan_terakhir["Simpanan Pokok"],
+                'simpanan_wajib': simpanan_terakhir["Simpanan Wajib"],
+                'simpanan_sukarela': simpanan_terakhir["Simpanan Sukarela"],
+            },
+            admin_login=admin_login
+        )
 
     context = {
+        'form': form,
         'username': username,
         'role': role,
         'anggota': anggota,
-        'simpanan': simpanan,
-        'form': form,
     }
     return render(request, "edit_simpanan.html", context)
-
 
 
 def hapus_simpanan(request, nomor_anggota):
@@ -315,7 +308,7 @@ def hapus_simpanan(request, nomor_anggota):
         'anggota': anggota,
         'simpanan': simpanan,
     }
-    return render(request, "hapus_simpanan.html", context)
+    return render(request, "daftar_simpanan.html", context)
 
 def tambah_penarikan(request, nomor_anggota, jenis):
     if not request.session.get('admin_id'):
@@ -418,8 +411,23 @@ def simpanan_anggota(request, nomor_anggota):
     return render(request, "simpanan_anggota.html", context)
 
 def detail_transaksi(request, id):
+    if not request.session.get('admin_id'):
+        return redirect('admin_koperasi:login')
+
+    role = request.session.get('admin_role')
+    username = request.session.get('admin_username')
+    admin = Admin.objects.filter(id_admin=request.session['admin_id']).first()
+
     transaksi = get_object_or_404(Simpanan, id_simpanan=id)
-    return render(request, "detail_transaksi.html", {"transaksi": transaksi})
+    tipe = transaksi.jenis_simpanan
+
+    return render(request, "detail_transaksi.html", {
+        "username": username,
+        "role": role,
+        "admin": admin,
+        "transaksi": transaksi,
+        "tipe": tipe,
+    })
 
 def link_callback(uri, rel):
     """

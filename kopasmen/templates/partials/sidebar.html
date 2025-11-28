@@ -1,5 +1,4 @@
 <!-- sidebar.html -->
- <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <div class="sidebar">
     <div class="profile">
         <div class="avatar">
@@ -13,7 +12,7 @@
         <li><a href="{% url 'admin_koperasi:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a></li>
         
         {% if role == "ketua" %}
-            <li><a href="{% url 'kelola_akun' %}" class="{% if request.resolver_match.url_name == 'kelola_akun' %}active{% endif %}">Manajemen Anggota</a></li>
+            <li><a href="{% url 'kelola_akun' %}" class="{% if request.resolver_match.url_name == 'kelola_akun' %}active{% endif %}">Kelola Akun</a></li>
             <li><a href="{% url 'daftar_simpanan' %}" class="{% if request.resolver_match.url_name == 'daftar_simpanan' %}active{% endif %}">Manajemen Simpanan</a></li>
             <li><a href="{% url 'pinjaman_list' %}" class="{% if request.resolver_match.url_name == 'pinjaman_list' %}active{% endif %}">Manajemen Pinjaman</a></li>
             <li><a href="{% url 'laporan' %}" class="{% if request.resolver_match.url_name == 'laporan' %}active{% endif %}">Laporan</a></li>
@@ -25,7 +24,11 @@
         {% endif %}
     </ul>
     
-    <div class="logout-btn"> <a href="{% url 'admin_koperasi:logout' %}">LOGOUT  <i class="fas fa-sign-out-alt"></i></a></div>
+    <div class="logout-btn">
+        <a href="{% url 'admin_koperasi:logout' %}">
+            <i class="ph ph-sign-out"></i> Logout
+        </a>
+    </div>
 </div>
 
 <!-- navbar.html -->
@@ -129,30 +132,38 @@
         font-weight: bold;
     }
 
+    /* Logout Button */
     .logout-btn {
         position: absolute;
         bottom: 30px;
-        left: 15px;
-        right: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 85%;
     }
 
     .logout-btn a {
-        display: block;
-        padding: 12px 20px;
-        background-color: rgba(255,0,0,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 0;
+        background-color: #fff;
         color: #d32f2f;
         text-decoration: none;
         border-radius: 8px;
-        text-align: center;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 14px;
+        border: 1.5px solid #d32f2f;
         transition: all 0.3s ease;
-        border: 1px solid rgba(255,0,0,0.2);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
 
     .logout-btn a:hover {
-        background-color: rgba(255,0,0,0.2);
+        background-color: #d32f2f;
+        color: #fff;
         transform: translateY(-2px);
     }
+
 
     /* Navbar Styling */
     .navbar {

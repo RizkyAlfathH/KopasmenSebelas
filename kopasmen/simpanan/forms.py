@@ -11,7 +11,7 @@ class SimpananForm(forms.ModelForm):
             'anggota': forms.TextInput(attrs={
                 'class': 'form-control',
                 'id': 'anggota-autocomplete',
-                'placeholder': 'Cari anggota...'
+                'placeholder': 'Cari anggota'
             }),
             'admin': forms.HiddenInput(),
             'tanggal_menyimpan': forms.DateInput(
@@ -32,30 +32,31 @@ class SimpananForm(forms.ModelForm):
 
 class EditSimpananForm(forms.Form):
     anggota = forms.ModelChoiceField(
-        queryset=Anggota.objects.none(),
-        widget=forms.Select(attrs={'class': 'form-control'})
+        queryset=Anggota.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control', 'readonly': 'readonly'})
     )
     admin = forms.ModelChoiceField(
         queryset=Admin.objects.none(),
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.HiddenInput()
     )
     tanggal_menyimpan = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        widget=forms.DateInput(attrs={'type': 'text', 'class': 'form-control datepicker'})
     )
     simpanan_pokok = forms.IntegerField(
-        required=False, widget=forms.NumberInput(attrs={'class': 'form-control'})
+        required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'step': 1})
     )
     simpanan_wajib = forms.IntegerField(
-        required=False, widget=forms.NumberInput(attrs={'class': 'form-control'})
+        required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'step': 1})
     )
     simpanan_sukarela = forms.IntegerField(
-        required=False, widget=forms.NumberInput(attrs={'class': 'form-control'})
+        required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'step': 1})
     )
 
     def __init__(self, *args, **kwargs):
+        admin_login = kwargs.pop('admin_login', None)
         super().__init__(*args, **kwargs)
-        self.fields['anggota'].queryset = Anggota.objects.all()
-        self.fields['admin'].queryset = Admin.objects.all()
+        if admin_login:
+            self.fields['admin'].initial = admin_login
 
 
 class PenarikanForm(forms.ModelForm):
@@ -63,7 +64,12 @@ class PenarikanForm(forms.ModelForm):
         model = Penarikan
         fields = ['anggota', 'jenis_simpanan', 'jumlah_penarikan', 'tanggal_penarikan']
         widgets = {
-            'tanggal_penarikan': forms.DateInput(attrs={'type': 'date'}),
+            'tanggal_penarikan': forms.DateInput(
+                attrs={
+                    'type': 'date',
+                    'placeholder': 'Pilih tanggal penarikan'
+                }
+            ),
         }
 
     def clean(self):

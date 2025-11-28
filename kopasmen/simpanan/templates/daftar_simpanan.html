@@ -2,10 +2,16 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Daftar Simpanan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KOPASMEN - Daftar Simpanan</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/phosphor-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
+    * { font-family: 'Poppins', sans-serif; box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', sans-serif;
       background: #f5f5f5;
       margin: 0;
       display: flex;
@@ -32,61 +38,134 @@
     }
     h1 { margin-bottom: 20px; color: #4A2C2A; }
     .section-header {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    .section-title { font-size: 20px; font-weight: bold; }
+    .section-title { font-size: 20px; font-weight: 600; }
     .add-button {
-      background: #FFD700; padding: 8px 12px;
-      border-radius: 6px; text-decoration: none;
-      color: #333; font-weight: bold;
+      background: #FFD700; 
+      color: #4A2C2A; 
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px; 
+      text-decoration: none;
+      display: inline-flex; 
+      align-items: center; 
+      gap: 5px;
+      font-size: 14px;
+      transition: 0.2s;
     }
-    .add-button:hover { background: #e6c200; }
+    .add-button:hover { background: #e6c200; color: #4A2C2A; }
     .search-box input {
       padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;
     }
     table {
-      width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: #fff;
+      border-radius: 0.25rem;
+      overflow: hidden;
     }
     th, td {
-      border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px;
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+      vertical-align: middle;
     }
-    th { background: #FFD700; }
-    tr:nth-child(even) { background: #f9f9f9; }
-    .action-links { display: flex; gap: 10px; }
-    .btn {
-      padding: 5px 10px; border-radius: 6px;
-      text-decoration: none; font-size: 13px; color: white;
+    th {
+      background: #FFD700;
+      color: #4A2C2A;
+      font-weight: 500;
+      text-align: left;
     }
-    .btn-view { background: #007bff; }
-    .btn-edit { background: #28a745; }
-    .btn-delete { background: #dc3545; }
-    .btn:hover { opacity: 0.9; }
+    tr:nth-child(even) { background: #f8f9fa; }
+
+    .action-links {
+      display: inline-flex;
+      gap: 3px;
+      justify-content: center;
+    }
+    .action-links a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 3px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 18px;
+      transition: 0.2s;
+    }
+    .btn-view { background: #00aeff; }
+    .btn-edit { background: #ffa51f; }
+    .btn-delete { background: #f31f1f; }
+    .action-links a:hover { transform: scale(1.1); }
+
     .empty-state { text-align: center; font-style: italic; color: #999; }
 
-    /* Pagination style */
-    .pagination {
+    /* Pagination modern */
+    .pagination-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-top: 20px;
-      text-align: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
-    .pagination a, .pagination span {
-      display: inline-block;
-      padding: 6px 12px;
-      margin: 0 3px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
+    .pagination-info {
       font-size: 14px;
+      color: #4A2C2A;
+      font-weight: 500;
     }
-    .pagination a {
+    .pagination-modern {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .page-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 36px;
+      height: 36px;
+      background: #fff8dc;
+      border: 2px solid #FFD700;
+      border-radius: 6px;
+      color: #FFD700;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .page-btn:hover {
       background: #FFD700;
-      color: #333;
+      color: #4A2C2A;
+      transform: translateY(-2px);
     }
-    .pagination a:hover { background: #e6c200; }
-    .pagination .current {
-      background: #4A2C2A;
-      color: #fff;
+    .page-btn.active {
+      background: #FFD700;
+      color: #4A2C2A;
+      border-color: #FFD700;
+      cursor: default;
+      transform: none;
     }
+    .page-btn.prev,
+    .page-btn.next {
+      width: 42px;
+      height: 36px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    table td, table th { text-align: left; }
+    table td:last-child { text-align: center; }
   </style>
 </head>
 <body>
@@ -98,11 +177,11 @@
 
       <div class="section-header">
         <h2 class="section-title">Daftar Simpanan Anggota</h2>
-        <div style="display: flex; gap: 15px; align-items: center;">
+        <div style="display: flex; gap: 10px; align-items: center;">
           <div class="search-box">
-            <input type="text" id="searchSimpanan" placeholder="Cari Nama Anggota...">
+            <input type="text" id="searchSimpanan" placeholder="Cari Nama Anggota">
           </div>
-          <a href="{% url 'tambah_simpanan' %}" class="add-button">+ Tambah Simpanan</a>
+          <a href="{% url 'tambah_simpanan' %}" class="add-button"><i class="ph-bold ph-plus"></i> Tambah Simpanan</a>
         </div>
       </div>
 
@@ -116,7 +195,7 @@
               <th>Jumlah Wajib</th>
               <th>Jumlah Sukarela</th>
               <th>Jumlah Dana Sosial</th>
-              <th>Aksi</th>
+              <th style="text-align:center;">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -129,50 +208,135 @@
               <td>Rp {{ row.total_sukarela|floatformat:0 }}</td>
               <td>Rp {{ row.total_dana_sosial|floatformat:0 }}</td>
               <td class="action-links">
-                <a href="{% url 'simpanan_anggota' row.kode_anggota %}" class="btn btn-view">Detail</a>
-                <a href="{% url 'edit_simpanan' row.kode_anggota %}" class="btn btn-edit">Edit</a>
-                <a href="{% url 'hapus_simpanan' row.no_anggota %}" class="btn btn-delete"
-                          onclick="return confirm('Yakin ingin menghapus data simpanan ini?');">Hapus</a>
+                <a href="{% url 'simpanan_anggota' row.kode_anggota %}" class="btn-view" title="Detail"><i class="ph-bold ph-eye"></i></a>
+                <a href="{% url 'edit_simpanan' row.kode_anggota %}" class="btn-edit" title="Edit"><i class="ph-bold ph-pencil-simple"></i></a>
+                <a href="{% url 'hapus_simpanan' row.no_anggota %}" class="btn-delete action-delete" 
+                   data-type="simpanan" data-name="{{ row.nama_anggota }}" title="Hapus"><i class="ph-bold ph-trash"></i></a>
               </td>
             </tr>
             {% empty %}
             <tr><td colspan="7" class="empty-state">Belum ada data simpanan</td></tr>
             {% endfor %}
           </tbody>
+        </table>
+
+        <!-- Pagination modern -->
+        <div class="pagination-container">
+          <div class="pagination-info">
+            {% if page_obj.paginator.count > 0 %}
+              Menampilkan <strong>{{ page_obj.start_index }}</strong> – <strong>{{ page_obj.end_index }}</strong> dari <strong>{{ page_obj.paginator.count }}</strong> data
+            {% else %}
+              Tidak ada data untuk ditampilkan
+            {% endif %}
+          </div>
+
+          <div class="pagination-modern">
+            {% if page_obj.has_previous %}
+              <a href="?page={{ page_obj.previous_page_number }}" class="page-btn prev">←</a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+              {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                {% if page_obj.number == num %}
+                  <span class="page-btn active">{{ num }}</span>
+                {% else %}
+                  <a href="?page={{ num }}" class="page-btn">{{ num }}</a>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}" class="page-btn next">→</a>
+            {% endif %}
+          </div>
+        </div>
       </div>
-
-      <!-- Pagination -->
-      {% if page_obj.has_other_pages %}
-      <div class="pagination">
-        {% if page_obj.has_previous %}
-          <a href="?page=1">« First</a>
-          <a href="?page={{ page_obj.previous_page_number }}">‹ Prev</a>
-        {% endif %}
-
-        {% for num in page_obj.paginator.page_range %}
-          {% if page_obj.number == num %}
-            <span class="current">{{ num }}</span>
-          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <a href="?page={{ num }}">{{ num }}</a>
-          {% endif %}
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}">Next ›</a>
-          <a href="?page={{ page_obj.paginator.num_pages }}">Last »</a>
-        {% endif %}
-      </div>
-      {% endif %}
     </div>
   </div>
 
   <script>
+    // 🔍 Realtime search
     document.getElementById("searchSimpanan").addEventListener("keyup", function() {
       const filter = this.value.toLowerCase();
       const rows = document.querySelectorAll(".simpanan-table tbody tr");
+      let visibleCount = 0;
+
       rows.forEach(row => {
         const nama = row.cells[1]?.textContent.toLowerCase();
-        row.style.display = nama && nama.includes(filter) ? "" : "none";
+        if (nama && nama.includes(filter)) {
+          row.style.display = "";
+          visibleCount++;
+        } else {
+          row.style.display = "none";
+        }
+      });
+
+      // Update info pagination sesuai hasil filter
+      const info = document.querySelector(".pagination-info");
+      if (visibleCount > 0) {
+        info.innerHTML = `Menampilkan <strong>1</strong> – <strong>${visibleCount}</strong> dari <strong>${visibleCount}</strong> data`;
+      } else {
+        info.innerHTML = `Tidak ada data untuk ditampilkan`;
+      }
+    });
+
+    // 🗑️ Konfirmasi hapus pakai SweetAlert
+    document.addEventListener("DOMContentLoaded", () => {
+      const deleteButtons = document.querySelectorAll(".action-delete");
+
+      deleteButtons.forEach(button => {
+        button.addEventListener("click", function(event) {
+          event.preventDefault();
+          const url = this.getAttribute("href");
+          const type = this.dataset.type;
+          const name = this.dataset.name;
+
+          Swal.fire({
+            title: `Konfirmasi Hapus ${type === 'admin' ? 'Admin' : 'Simpanan'}`,
+            html: `
+              <p style="font-size:14px; margin-bottom:6px;">Anda yakin ingin menghapus data simpanan milik <b>${name}</b>?</p>
+              <p style="font-size:13px;">Ketik <b style="color:#d33;">hapus</b> untuk melanjutkan.</p>
+              <input id="confirmInput" class="swal2-input" placeholder="Ketik 'hapus' di sini" style="font-size:13px;">
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Hapus',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+            focusConfirm: false,
+            preConfirm: () => {
+              const inputValue = Swal.getPopup().querySelector('#confirmInput').value.trim().toLowerCase();
+              if (inputValue !== 'hapus') {
+                Swal.showValidationMessage("Ketik 'hapus' untuk melanjutkan!");
+                return false;
+              }
+              return true;
+            },
+            customClass: {
+              popup: 'rounded-3xl',
+              confirmButton: 'bg-red-600 text-white px-4 py-2 rounded-md text-sm',
+              cancelButton: 'bg-gray-300 text-black px-4 py-2 rounded-md text-sm'
+            }
+          }).then(result => {
+              if (result.isConfirmed) {
+                // buat form POST secara dinamis
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+
+                // tambahkan CSRF token
+                const csrfToken = '{{ csrf_token }}'; // pastikan template Django mengirim token ini
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+
+                document.body.appendChild(form);
+                form.submit();
+              }
+            });
+        });
       });
     });
   </script>
