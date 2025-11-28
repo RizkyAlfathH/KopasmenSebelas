@@ -13,16 +13,21 @@ class AdminForm(forms.ModelForm):
             'password_hash': 'Password',
         }
         widgets = {
-            'password_hash': forms.PasswordInput(),
+            'password_hash': forms.PasswordInput(render_value=False),
         }
 
     def save(self, commit=True):
         admin = super().save(commit=False)
-        if (
-            self.cleaned_data.get('password_hash')
-            and not admin.password_hash.startswith('pbkdf2_sha256$')
-        ):
-            admin.password_hash = make_password(self.cleaned_data['password_hash'])
+        password = self.cleaned_data.get('password_hash')
+
+        if password:
+            if not password.startswith('pbkdf2_sha256$'):
+                admin.password_hash = make_password(password)
+        else:
+            if admin.pk:  
+                old_admin = Admin.objects.get(pk=admin.pk)
+                admin.password_hash = old_admin.password_hash
+
         if commit:
             admin.save()
         return admin
@@ -30,23 +35,17 @@ class AdminForm(forms.ModelForm):
 
 class AnggotaForm(forms.ModelForm):
     tanggal_daftar = forms.DateField(
-        widget=forms.DateInput(
-            attrs={
-                'type': 'date',
-                'readonly': 'readonly',
-            }
-        ),
-        initial=lambda: now().date(),  # ✅ pakai lambda
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'readonly': 'readonly',
+        }),
+        initial=lambda: now().date(),
         required=False,
     )
 
     tanggal_nonaktif = forms.DateField(
-        widget=forms.DateInput(
-            attrs={
-                'type': 'date',
-            }
-        ),
-        initial=lambda: now().date(),  # ✅ pakai lambda juga
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        initial=lambda: now().date(),
         required=False,
     )
 
@@ -75,7 +74,15 @@ class AnggotaForm(forms.ModelForm):
             'password_hash': 'Password',
         }
         widgets = {
-            'password_hash': forms.PasswordInput(render_value=True),
+            'password_hash': forms.PasswordInput(render_value=True, attrs={'placeholder': 'Masukkan password'}),
+            'nama': forms.TextInput(attrs={'placeholder': 'Masukkan nama lengkap'}),
+            'nip': forms.TextInput(attrs={'placeholder': 'Contoh: 12345678'}),
+            'no_telp': forms.TextInput(attrs={'placeholder': 'Masukkan nomor telepon'}),
+            'alamat': forms.TextInput(attrs={'placeholder': 'Masukkan alamat'}),
+            'pekerjaan': forms.TextInput(attrs={'placeholder': 'Masukkan Pekerjaan'}),
+            'jenis_kelamin': forms.Select(attrs={'placeholder': 'Pilih jenis kelamin'}),
+            'status': forms.Select(attrs={'placeholder': 'Pilih status'}),
+            'alasan_nonaktif': forms.TextInput(attrs={'placeholder': 'Alasan nonaktif'}),
         }
 
     def clean_email(self):
@@ -106,18 +113,11 @@ class AnggotaForm(forms.ModelForm):
                 self.add_error('tanggal_nonaktif', 'Wajib diisi jika status nonaktif.')
         return cleaned_data
 
-
-
     def save(self, commit=True):
         anggota = super().save(commit=False)
         anggota.tanggal_daftar = now().date()
-
-        if (
-            self.cleaned_data.get('password_hash')
-            and not anggota.password_hash.startswith('pbkdf2_sha256$')
-        ):
+        if self.cleaned_data.get('password_hash') and not anggota.password_hash.startswith('pbkdf2_sha256$'):
             anggota.password_hash = make_password(self.cleaned_data['password_hash'])
-
         if commit:
             anggota.save()
         return anggota

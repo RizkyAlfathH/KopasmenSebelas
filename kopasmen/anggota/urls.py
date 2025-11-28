@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     path("detail/<str:nomor_anggota>/", views.detail_anggota, name="detail_anggota"),
-    path('kelola-akun/', views.kelola_akun_view, name='kelola_akun'),
+    path("kelola-akun/", views.kelola_akun, name="kelola_akun"),
     path('tambah-admin/', views.tambah_admin, name='tambah_admin'),
     path('edit-admin/<int:id_admin>/', views.edit_admin, name='edit_admin'),
     path('hapus-admin/<int:id_admin>/', views.hapus_admin, name='hapus_admin'),

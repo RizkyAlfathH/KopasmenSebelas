@@ -34,91 +34,150 @@ from django.views.decorators.csrf import csrf_exempt
 from openpyxl import load_workbook
 
 
-def kelola_akun_view(request):
-    anggotas = Anggota.objects.all() 
-    admins = Admin.objects.all()
-    return render(request, 'kelola_akun.html', {'anggotas': anggotas, 'admins': admins})
-
 def kelola_akun(request):
+    # Cek login session
+    if not request.session.get('admin_id'):
+        return redirect('admin_koperasi:login')
+
+    role = request.session.get('admin_role')
+    username = request.session.get('admin_username')
+
+    # Ambil filter pencarian
     search_admin = request.GET.get("searchAdmin", "")
     search_anggota = request.GET.get("searchAnggota", "")
 
+    # === ADMIN ===
     admins = Admin.objects.all()
     if search_admin:
         admins = admins.filter(username__icontains=search_admin)
     admins = admins.order_by("id_admin")
 
+    paginator_admin = Paginator(admins, 10)
+    page_admin = request.GET.get("page_admin", 1)
+    admins_page = paginator_admin.get_page(page_admin)
+
+    # === ANGGOTA ===
     anggotas = Anggota.objects.all()
     if search_anggota:
         anggotas = anggotas.filter(nama__icontains=search_anggota)
     anggotas = anggotas.order_by("nomor_anggota")
 
-    return render(request, "kelola_akun.html", {
-        "admins": admins,
-        "anggotas": anggotas,
+    paginator_anggota = Paginator(anggotas, 10)
+    page_anggota = request.GET.get("page_anggota", 1)
+    anggotas_page = paginator_anggota.get_page(page_anggota)
+
+    context = {
+        "username": username,
+        "role": role,
+        "admins": admins_page,
+        "anggotas": anggotas_page,
         "searchAdmin": search_admin,
         "searchAnggota": search_anggota,
-    })
+    }
+    return render(request, "kelola_akun.html", context)
 
-
+# ===============================
+# TAMBAH / EDIT / HAPUS ADMIN
+# ===============================
 def tambah_admin(request):
+    if not request.session.get('admin_id'):
+        return redirect('admin_koperasi:login')
+    role = request.session.get('admin_role')
+    username = request.session.get('admin_username')
+
     if request.method == 'POST':
         form = AdminForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('kelola_akun') 
+            messages.success(request, "Admin berhasil ditambahkan.")
+            return redirect('kelola_akun')
     else:
         form = AdminForm()
-    return render(request, 'form_admin.html', {'form': form})
+
+    return render(request, 'form_admin.html', {'form': form, 'judul': 'Tambah Admin', 'username': username, 'role': role})
 
 def edit_admin(request, id_admin):
+    if not request.session.get('admin_id'):
+        return redirect('admin_koperasi:login')
+    role = request.session.get('admin_role')
+    username = request.session.get('admin_username')
+
     admin = get_object_or_404(Admin, id_admin=id_admin)
     form = AdminForm(request.POST or None, instance=admin)
     if form.is_valid():
         form.save()
+        messages.success(request, "Admin berhasil diperbarui.")
         return redirect('kelola_akun')
-    return render(request, 'form_admin.html', {'form': form, 'judul': 'Edit Admin'})
+
+    return render(request, 'form_admin.html', {'form': form, 'judul': 'Edit Admin', 'username': username, 'role': role})
 
 def hapus_admin(request, id_admin):
     admin = get_object_or_404(Admin, id_admin=id_admin)
     admin.delete()
+    messages.success(request, "Admin berhasil dihapus.")
     return redirect('kelola_akun')
 
 def detail_admin(request, id_admin):
+    if not request.session.get('admin_id'):
+        return redirect('admin_koperasi:login')
+    role = request.session.get('admin_role')
+    username = request.session.get('admin_username')
+
     admin = get_object_or_404(Admin, id_admin=id_admin)
     all_admins = Admin.objects.order_by('id_admin')
-    nomor_urut = list(all_admins).index(admin) + 1  
+    nomor_urut = list(all_admins).index(admin) + 1
+    return render(request, 'detailA.html', {'admin': admin, 'nomor_urut': nomor_urut, 'username': username, 'role': role})
 
-    context = {
-        'admin': admin,
-        'nomor_urut': nomor_urut,
-    }
-    return render(request, 'detailA.html', context)
+# ===============================
+# TAMBAH / EDIT / HAPUS ANGGOTA
+# ===============================
+def tambah_anggota(request):
+    if not request.session.get('admin_id'):
+        return redirect('admin_koperasi:login')
+    role = request.session.get('admin_role')
+    username = request.session.get('admin_username')
 
-def anggota_detail(request, nomor_anggota):
-    try:
-        anggota = Anggota.objects.get(nomor_anggota=nomor_anggota)
-        return render(request, 'detail.html', {'anggota': anggota})
-    except Anggota.DoesNotExist:
-        return render(request, 'detail.html', {'error': 'Anggota not found'})
-    
+    if request.method == 'POST':
+        form = AnggotaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Anggota berhasil ditambahkan.")
+            return redirect('kelola_akun')
+    else:
+        form = AnggotaForm()
+
+    return render(request, 'form_anggota.html', {'form': form, 'judul': 'Tambah Anggota', 'username': username, 'role': role})
+
 def edit_anggota(request, nomor_anggota):
+    if not request.session.get('admin_id'):
+        return redirect('admin_koperasi:login')
+    role = request.session.get('admin_role')
+    username = request.session.get('admin_username')
+
     anggota = get_object_or_404(Anggota, nomor_anggota=nomor_anggota)
     form = AnggotaForm(request.POST or None, instance=anggota)
     if form.is_valid():
         form.save()
+        messages.success(request, "Anggota berhasil diperbarui.")
         return redirect('kelola_akun')
-    return render(request, 'form_anggota.html', {'form': form, 'judul': 'Edit Anggota'})
 
+    return render(request, 'form_anggota.html', {'form': form, 'judul': 'Edit Anggota', 'username': username, 'role': role})
 
 def hapus_anggota(request, nomor_anggota):
     anggota = get_object_or_404(Anggota, nomor_anggota=nomor_anggota)
     anggota.delete()
+    messages.success(request, "Anggota berhasil dihapus.")
     return redirect('kelola_akun')
 
 def detail_anggota(request, nomor_anggota):
+    if not request.session.get('admin_id'):
+        return redirect('admin_koperasi:login')
+    role = request.session.get('admin_role')
+    username = request.session.get('admin_username')
+
     anggota = get_object_or_404(Anggota, nomor_anggota=nomor_anggota)
-    return render(request, 'detail.html', {'anggota': anggota})
+    return render(request, 'detail.html', {'anggota': anggota, 'username': username, 'role': role})
+
 
 def export_excel_anggota(request):
     wb = openpyxl.Workbook()
@@ -247,159 +306,11 @@ def export_pdf_anggota(request):
     doc.build(elements)
     return response
 
-
-def kelola_akun_view(request):
-    # cek session login
-    if not request.session.get('admin_id'):
-        return redirect('admin_koperasi:login')
-
-    role = request.session.get('admin_role')
-    username = request.session.get('admin_username')
-
-    admins = Admin.objects.all()
-    anggotas = Anggota.objects.all()
-
-    context = {
-        'username': username,
-        'role': role,
-        'admins': admins,
-        'anggotas': anggotas,
-    }
-
-    return render(request, 'kelola_akun.html', context)
-
-def tambah_admin(request):
-    if not request.session.get('admin_id'):
-        return redirect('admin_koperasi:login')
-
-    role = request.session.get('admin_role')
-    username = request.session.get('admin_username')
-
-    if request.method == 'POST':
-        form = AdminForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Admin berhasil ditambahkan.")
-            return redirect('kelola_akun')
-    else:
-        form = AdminForm()
-
-    context = {
-        'form': form,
-        'judul': 'Tambah Admin',
-        'username': username,
-        'role': role,
-    }
-    return render(request, 'form_admin.html', context)
-
-def tambah_anggota(request):
-    if not request.session.get('admin_id'):
-        return redirect('admin_koperasi:login')
-
-    role = request.session.get('admin_role')
-    username = request.session.get('admin_username')
-
-    if request.method == 'POST':
-        form = AnggotaForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Anggota berhasil ditambahkan.")
-            return redirect('kelola_akun')
-    else:
-        form = AnggotaForm()
-
-    context = {
-        'form': form,
-        'judul': 'Tambah Anggota',
-        'username': username,
-        'role': role,
-    }
-    return render(request, 'form_anggota.html', context)
-
 # API untuk cek email unik (dipakai AJAX di JS)
 def cek_email(request):
     email = request.GET.get("email", "")
     exists = Anggota.objects.filter(email=email).exists()
     return JsonResponse({"exists": exists})
-
-def edit_admin(request, id_admin):
-    if not request.session.get('admin_id'):
-        return redirect('admin_koperasi:login')
-
-    role = request.session.get('admin_role')
-    username = request.session.get('admin_username')
-
-    admin = get_object_or_404(Admin, id_admin=id_admin)
-    form = AdminForm(request.POST or None, instance=admin)
-    if form.is_valid():
-        form.save()
-        messages.success(request, "Admin berhasil diperbarui.")
-        return redirect('kelola_akun')
-
-    context = {
-        'form': form,
-        'judul': 'Edit Admin',
-        'username': username,
-        'role': role,
-    }
-    return render(request, 'form_admin.html', context)
-
-def edit_anggota(request, nomor_anggota):
-    if not request.session.get('admin_id'):
-        return redirect('admin_koperasi:login')
-
-    role = request.session.get('admin_role')
-    username = request.session.get('admin_username')
-
-    anggota = get_object_or_404(Anggota, nomor_anggota=nomor_anggota)
-    form = AnggotaForm(request.POST or None, instance=anggota)
-    if form.is_valid():
-        form.save()
-        messages.success(request, "Anggota berhasil diperbarui.")
-        return redirect('kelola_akun')
-
-    context = {
-        'form': form,
-        'judul': 'Edit Anggota',
-        'username': username,
-        'role': role,
-    }
-    return render(request, 'form_anggota.html', context)
-
-def detail_admin(request, id_admin):
-    if not request.session.get('admin_id'):
-        return redirect('admin_koperasi:login')
-
-    role = request.session.get('admin_role')
-    username = request.session.get('admin_username')
-
-    admin = get_object_or_404(Admin, id_admin=id_admin)
-    all_admins = Admin.objects.order_by('id_admin')
-    nomor_urut = list(all_admins).index(admin) + 1  
-
-    context = {
-        'admin': admin,
-        'nomor_urut': nomor_urut,
-        'username': username,
-        'role': role,
-    }
-    return render(request, 'detailA.html', context)
-
-def detail_anggota(request, nomor_anggota):
-    if not request.session.get('admin_id'):
-        return redirect('admin_koperasi:login')
-
-    role = request.session.get('admin_role')
-    username = request.session.get('admin_username')
-
-    anggota = get_object_or_404(Anggota, nomor_anggota=nomor_anggota)
-
-    context = {
-        'anggota': anggota,
-        'username': username,
-        'role': role,
-    }
-    return render(request, 'detail.html', context)
 
 def baca_data_anggota(file_path):
     wb = load_workbook(file_path)

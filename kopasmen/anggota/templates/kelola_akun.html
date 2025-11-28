@@ -83,8 +83,8 @@
         vertical-align: middle;
     }
     th {
-        background: #343a40;
-        color: #fff;
+        background: #FFD700;
+        color: #4A2C2A;
         font-weight: 500;
         text-align: left;
     }
@@ -112,17 +112,82 @@
         .action-group a:hover { transform: scale(1.1); }
 
     .empty-state { text-align: center; font-style: italic; color: #999; }
-    .pagination { margin-top: 15px; text-align: center; }
-    .pagination a {
-        padding: 6px 12px; margin: 0 5px;
-        border-radius: 6px; background: #FFD700;
-        color: #4A2C2A; text-decoration: none; font-weight: 600;
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
     }
-    .pagination span { margin: 0 10px; font-size: 14px; color: #555; }
-    .pagination a:hover { background: #e6c200; }
+
+    .pagination-info {
+        font-size: 14px;
+        color: #4A2C2A;
+        font-weight: 500;
+    }
+
+    .pagination-modern {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .page-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 36px;
+        height: 36px;
+        background: #fff8dc;
+        border: 2px solid #FFD700;
+        border-radius: 6px;
+        color: #FFD700;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    .page-btn:hover {
+        background: #FFD700;
+        color: #FFD700;
+        transform: translateY(-2px);
+    }
+
+    .page-btn.active {
+        background: #FFD700;
+        color: #4A2C2A;
+        border-color: #FFD700;
+        cursor: default;
+        transform: none;
+    }
+
+    .page-btn.prev,
+    .page-btn.next {
+        width: 42px;
+        height: 36px;
+        font-size: 18px;
+        font-weight: bold;
+    }
 
     table td, table th { text-align: left; } /* semua teks rata kiri */
     table td:last-child { text-align: center; } /* kecuali aksi */
+
+    .swal2-popup {
+        font-size: 13.5px !important;
+        padding: 1.5em 1em !important;
+    }
+    .swal-small-title {
+        font-size: 21px !important;
+    }
+    .swal-small-text {
+        font-size: 18px !important;
+    }
+    .swal2-input {
+        height: 41px !important;
+    }
 </style>
 </head>
 <body>
@@ -138,7 +203,7 @@
         <h2 class="section-title">Daftar Admin</h2>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
             <div class="search-box">
-                <input type="text" id="searchAdmin" placeholder="Cari Nama Admin...">
+                <input type="text" id="searchAdmin" placeholder="Cari Nama Admin">
             </div>
             <a href="{% url 'tambah_admin' %}" class="add-button">
                 <i class="ph-bold ph-user-plus"></i> Tambah Admin
@@ -165,7 +230,7 @@
                         <div class="action-group">
                             <a href="{% url 'detail_admin' admin.id_admin %}" class="action-view" title="Lihat"><i class="ph-bold ph-eye"></i></a>
                             <a href="{% url 'edit_admin' admin.id_admin %}" class="action-edit" title="Edit"><i class="ph-bold ph-pencil-simple"></i></a>
-                            <a href="{% url 'hapus_admin' admin.id_admin %}" class="action-delete" title="Hapus" onclick="return confirm('Yakin ingin menghapus admin ini?');"><i class="ph-bold ph-trash"></i></a>
+                            <a href="{% url 'hapus_admin' admin.id_admin %}" class="action-delete" title="Hapus" data-type="admin" data-name="{{ admin.username }}"><i class="ph-bold ph-trash"></i></a>
                         </div>
                     </td>
                 </tr>
@@ -174,10 +239,37 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; flex-wrap:wrap;">
-        <div id="adminTableInfo">Menampilkan 0 sampai 0 dari 0 data</div>
-        <div id="adminTablePagination"></div>
+        <div class="pagination-container">
+            <div class="pagination-info">
+                {% if admins.paginator.count > 0 %}
+                    Menampilkan <strong>{{ admins.start_index }}</strong> –
+                    <strong>{{ admins.end_index }}</strong> dari
+                    <strong>{{ admins.paginator.count }}</strong> data
+                {% else %}
+                    Tidak ada data untuk ditampilkan
+                {% endif %}
+            </div>
+
+            <div class="pagination-modern">
+                {% if admins.has_previous %}
+                    <a href="?page_admin={{ admins.previous_page_number }}&searchAdmin={{ searchAdmin }}" class="page-btn prev">←</a>
+                {% endif %}
+
+                {% for num in admins.paginator.page_range %}
+                    {% if num >= admins.number|add:'-2' and num <= admins.number|add:'2' %}
+                        {% if admins.number == num %}
+                            <span class="page-btn active">{{ num }}</span>
+                        {% else %}
+                            <a href="?page_admin={{ num }}&searchAdmin={{ searchAdmin }}" class="page-btn">{{ num }}</a>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if admins.has_next %}
+                    <a href="?page_admin={{ admins.next_page_number }}&searchAdmin={{ searchAdmin }}" class="page-btn next">→</a>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 
@@ -188,7 +280,7 @@
         <h2 class="section-title">Daftar Anggota</h2>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
             <div class="search-box">
-                <input type="text" id="searchAnggota" placeholder="Cari Nama Anggota...">
+                <input type="text" id="searchAnggota" placeholder="Cari Nama Anggota">
             </div>
             <a href="{% url 'tambah_anggota' %}" class="add-button"><i class="ph-bold ph-user-plus"></i> Tambah Anggota</a>
             <a href="{% url 'export_excel_anggota' %}" class="add-button"><i class="ph-bold ph-file-xls"></i> Excel</a>
@@ -206,14 +298,14 @@
         <table class="anggota-table">
             <thead>
                 <tr>
-                    <th style="text-align:center;" >No. Anggota</th><th>Nama</th><th>NIP</th><th>Jenis Kelamin</th>
+                    <th>No. Anggota</th><th>Nama</th><th>NIP</th><th>Jenis Kelamin</th>
                     <th>Tanggal Daftar</th><th>Status</th><th>Alasan Tidak Aktif</th><th style="width:130px;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 {% for anggota in anggotas %}
                 <tr>
-                    <td style="text-align:center;" >{{ anggota.nomor_anggota|default:"-" }}</td>
+                    <td>{{ anggota.nomor_anggota|default:"-" }}</td>
                     <td>{{ anggota.nama|default:"-" }}</td>
                     <td>{{ anggota.nip|default:"-" }}</td>
                     <td>{{ anggota.jenis_kelamin|default:"-" }}</td>
@@ -224,8 +316,7 @@
                         <div class="action-group">
                             <a href="{% url 'detail_anggota' anggota.nomor_anggota %}" class="action-view" title="Lihat"><i class="ph-bold ph-eye"></i></a>
                             <a href="{% url 'edit_anggota' anggota.nomor_anggota %}" class="action-edit" title="Edit"><i class="ph-bold ph-pencil-simple"></i></a>
-                            <a href="{% url 'hapus_anggota' anggota.nomor_anggota %}" class="action-delete" title="Hapus" onclick="return confirm('Yakin ingin menghapus anggota ini?');"><i class="ph-bold ph-trash"></i></a>
-                        </div>
+                            <a href="{% url 'hapus_anggota' anggota.nomor_anggota %}" class="action-delete" title="Hapus" data-type="anggota" data-name="{{ anggota.nama }}"><i class="ph-bold ph-trash"></i></a>
                     </td>
                 </tr>
                 {% empty %}
@@ -233,95 +324,130 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; flex-wrap:wrap;">
-        <div id="anggotaTableInfo">Menampilkan 0 sampai 0 dari 0 data</div>
-        <div id="anggotaTablePagination"></div>
+        <div class="pagination-container">
+            <div class="pagination-info">
+                {% if anggotas.paginator.count > 0 %}
+                    Menampilkan <strong>{{ anggotas.start_index }}</strong> –
+                    <strong>{{ anggotas.end_index }}</strong> dari
+                    <strong>{{ anggotas.paginator.count }}</strong> data
+                {% else %}
+                    Tidak ada data untuk ditampilkan
+                {% endif %}
+            </div>
+
+            <div class="pagination-modern">
+                {% if anggotas.has_previous %}
+                    <a href="?page_anggota={{ anggotas.previous_page_number }}&searchAnggota={{ searchAnggota }}" class="page-btn prev">←</a>
+                {% endif %}
+
+                {% for num in anggotas.paginator.page_range %}
+                    {% if num >= anggotas.number|add:'-2' and num <= anggotas.number|add:'2' %}
+                        {% if anggotas.number == num %}
+                            <span class="page-btn active">{{ num }}</span>
+                        {% else %}
+                            <a href="?page_anggota={{ num }}&searchAnggota={{ searchAnggota }}" class="page-btn">{{ num }}</a>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if anggotas.has_next %}
+                    <a href="?page_anggota={{ anggotas.next_page_number }}&searchAnggota={{ searchAnggota }}" class="page-btn next">→</a>
+                {% endif %}
+            </div>
+        </div>
+
     </div>
 
     <script>
-        function paginateTable(tableSelector, infoSelector, perPage = 10) {
-            const table = document.querySelector(tableSelector);
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            const info = document.querySelector(infoSelector);
-            const pagContainer = info.nextElementSibling;
-            let currentPage = 1;
-
-            function getVisibleRows() {
-                return rows.filter(row => row.style.display !== "none");
-            }
-
-            function renderPage(page) {
-                const visibleRows = getVisibleRows();
-                const totalPages = Math.ceil(visibleRows.length / perPage) || 1;
-                currentPage = Math.min(page, totalPages);
-
-                const start = (currentPage - 1) * perPage;
-                const end = start + perPage;
-
-                // Tampilkan hanya baris yang sesuai halaman & terlihat
-                let visibleCount = 0;
-                visibleRows.forEach((row, idx) => {
-                    row.style.display = (idx >= start && idx < end) ? "" : "none";
-                    if (idx >= start && idx < end) visibleCount++;
-                });
-
-                // Update teks info
-                const showingStart = visibleRows.length === 0 ? 0 : start + 1;
-                const showingEnd = end > visibleRows.length ? visibleRows.length : end;
-                info.textContent = `Menampilkan ${showingStart}–${showingEnd} dari ${rows.length} data`;
-
-                // Update tombol pagination
-                pagContainer.innerHTML = "";
-                for (let i = 1; i <= totalPages; i++) {
-                    const btn = document.createElement("a");
-                    btn.href = "#";
-                    btn.textContent = i;
-                    btn.style.margin = "0 3px";
-                    btn.style.padding = "6px 12px";
-                    btn.style.borderRadius = "6px";
-                    btn.style.background = (i === currentPage) ? "#007bff" : "#FFD700";
-                    btn.style.color = (i === currentPage) ? "#fff" : "#4A2C2A";
-                    btn.style.textDecoration = "none";
-                    btn.addEventListener("click", e => {
-                        e.preventDefault();
-                        renderPage(i);
-                    });
-                    pagContainer.appendChild(btn);
-                }
-            }
-
-            // Jalankan pertama kali
-            renderPage(currentPage);
-
-            // Return fungsi agar bisa dipanggil ulang setelah filter
-            return renderPage;
-        }
-
-        // Jalankan pagination untuk Admin & Anggota
-        const renderAdminPage = paginateTable(".admin-table", "#adminTableInfo", 20);
-        const renderAnggotaPage = paginateTable(".anggota-table", "#anggotaTableInfo", 20);
-
-        // ====== Search Realtime ======
-        function filterTable(inputId, tableSelector, renderPageFunc) {
+    document.addEventListener("DOMContentLoaded", () => {
+        // ===== Fungsi umum untuk filter tabel =====
+        function filterTable(inputId, tableSelector, infoSelector, originalText) {
             const input = document.getElementById(inputId);
-            input.addEventListener("keyup", function() {
+            const table = document.querySelector(tableSelector);
+            const infoBox = document.querySelector(infoSelector);
+            const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+            input.addEventListener("keyup", () => {
                 const filter = input.value.toLowerCase();
-                const table = document.querySelector(tableSelector);
-                const rows = Array.from(table.querySelectorAll("tbody tr"));
+                let visibleCount = 0;
 
                 rows.forEach(row => {
-                    const text = row.cells[1]?.textContent.toLowerCase() || "";
-                    row.style.display = text.includes(filter) ? "" : "none";
+                    const text = row.textContent.toLowerCase();
+                    const isVisible = text.includes(filter);
+                    row.style.display = isVisible ? "" : "none";
+                    if (isVisible) visibleCount++;
                 });
 
-                renderPageFunc(1); // reset ke halaman 1 setelah filter
+                // Update info sesuai hasil filter
+                if (filter.trim() === "") {
+                    infoBox.innerHTML = originalText; // kalau kosong, balik ke info asli
+                } else if (visibleCount === 0) {
+                    infoBox.innerHTML = "Tidak ada data untuk ditampilkan";
+                } else {
+                    infoBox.innerHTML = `Menampilkan <strong>1</strong> – <strong>${visibleCount}</strong> dari <strong>${visibleCount}</strong> data`;
+                }
             });
         }
 
-        filterTable("searchAdmin", ".admin-table", renderAdminPage);
-        filterTable("searchAnggota", ".anggota-table", renderAnggotaPage);
+        // ===== Simpan info asli sebelum diubah =====
+        const adminInfoBox = document.querySelector(".content-card:first-of-type .pagination-info");
+        const anggotaInfoBox = document.querySelector(".content-card:last-of-type .pagination-info");
+        const adminOriginalText = adminInfoBox ? adminInfoBox.innerHTML : "";
+        const anggotaOriginalText = anggotaInfoBox ? anggotaInfoBox.innerHTML : "";
+
+        // ===== Jalankan filter masing-masing tabel =====
+        filterTable("searchAdmin", ".admin-table", ".content-card:first-of-type .pagination-info", adminOriginalText);
+        filterTable("searchAnggota", ".anggota-table", ".content-card:last-of-type .pagination-info", anggotaOriginalText);
+    });
+    
+    document.addEventListener("DOMContentLoaded", () => {
+        const deleteButtons = document.querySelectorAll(".action-delete");
+
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", function(event) {
+                event.preventDefault();
+                const url = this.getAttribute("href");
+                const type = this.dataset.type;
+                const name = this.dataset.name;
+
+                Swal.fire({
+                    title: `Konfirmasi Hapus ${type === 'admin' ? 'Admin' : 'Anggota'}`,
+                    html: `
+                        <p style="font-size:14px; margin-bottom:6px;">Anda yakin ingin menghapus <b>${name}</b>?</p>
+                        <p style="font-size:13px;">Ketik <b style="color:#d33;">hapus</b> untuk melanjutkan.</p>
+                        <input id="confirmInput" class="swal2-input" placeholder="Ketik 'hapus' di sini" style="font-size:13px;">
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Hapus',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true,
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const inputValue = Swal.getPopup().querySelector('#confirmInput').value.trim().toLowerCase();
+                        if (inputValue !== 'hapus') {
+                            Swal.showValidationMessage("Ketik 'hapus' untuk melanjutkan!");
+                            return false;
+                        }
+                        return true;
+                    },
+                    customClass: {
+                        popup: 'rounded-3xl',
+                        title: 'swal-small-title',
+                        htmlContainer: 'swal-small-text',
+                        confirmButton: 'bg-red-600 text-white px-4 py-2 rounded-md text-sm',
+                        cancelButton: 'bg-gray-300 text-black px-4 py-2 rounded-md text-sm'
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    });
     </script>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
 </body>

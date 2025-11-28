@@ -1,129 +1,249 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Form Anggota</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<title>KOPASMEN - Form Anggota</title>
 
-        .main-content {
-            margin-left: 280px; /* offset sidebar */
-            margin-top: 60px;  /* offset navbar */
-            padding: 30px;
-            min-height: calc(100vh - 60px);
-            background-color: #f5f5f5;
-        }
+<!-- Library -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://unpkg.com/phosphor-icons"></script>
 
-        .content-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-            animation: fadeIn 0.5s ease;
-            max-width: 600px;
-            margin: auto;
-        }
+{% load widget_tweaks %}
 
-        h1 {
-            margin-bottom: 20px;
-            color: #4A2C2A;
-            font-size: 22px;
-            border-bottom: 2px solid #FFD700;
-            padding-bottom: 10px;
-        }
+<style>
+    * {
+        font-family: 'Poppins', sans-serif;
+        box-sizing: border-box;
+    }
 
-        form p {
-            margin-bottom: 15px;
-        }
+    body {
+        background: #f5f5f5;
+        margin: 0;
+        display: flex;
+    }
 
-        form label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 6px;
-            color: #333;
-        }
+    /* Sidebar */
+    .sidebar {
+        width: 280px;
+        background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+        padding: 20px 0;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
 
-        form input,
-        form select,
-        form textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
+    /* Main content */
+    .main-content {
+        margin-left: 280px;
+        padding: 30px;
+        flex: 1;
+    }
 
-        form input:focus,
-        form select:focus,
-        form textarea:focus {
-            border-color: #FFD700;
-            outline: none;
-            box-shadow: 0 0 4px rgba(255, 215, 0, 0.6);
-        }
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        width: 100%;
+        max-width: 100%;
+    }
 
-        .form-actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 15px;
-        }
+    h2 {
+        font-weight: 600;
+        margin-bottom: 25px;
+        color: #4A2C2A;
+    }
 
-        button[type="submit"] {
-            background: #FFD700;
-            border: none;
-            color: #333;
-            font-weight: bold;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    label {
+        font-weight: 500;
+        color: #4A2C2A;
+        margin-bottom: 6px;
+        display: block;
+        font-size: 14px;
+    }
 
-        button[type="submit"]:hover {
-            background: #e6c200;
-            transform: translateY(-2px);
-        }
+    input.form-control, 
+    select.form-control, 
+    textarea.form-control {
+        border-radius: 8px;
+        font-size: 14px;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+    }
 
-        a.cancel-btn {
-            background: #f2f2f2;
-            color: #333;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            transition: all 0.3s ease;
-        }
+    input.form-control:focus,
+    select.form-control:focus,
+    textarea.form-control:focus {
+        border-color: #FFD700;
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+        outline: none;
+    }
 
-        a.cancel-btn:hover {
-            background: #e0e0e0;
-        }
+    .input-wrapper {
+        position: relative;
+        width: 100%;
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    .input-wrapper input,
+    .input-wrapper select {
+        width: 100%;
+        padding-right: 32px; /* ruang untuk ikon di dalam input */
+        border-radius: 8px;
+        font-size: 14px;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        transition: 0.2s;
+    }
+
+    .input-wrapper input:focus,
+    .input-wrapper select:focus {
+        border-color: #FFD700;
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+        outline: none;
+    }
+
+    .input-icon {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        color: #4A2C2A;
+        cursor: pointer;
+        opacity: 0.8;
+        font-size: 14px;
+        transition: 0.2s ease;
+    }
+
+    .input-icon:hover {
+        opacity: 1;
+        transform: translateY(-50%) scale(1.1);
+    }
+
+
+    /* Tombol */
+    .btn-simpan {
+        background: #FFD700; 
+        color: #4A2C2A; 
+        font-weight: 600;
+        padding: 6px 14px; 
+        border-radius: 6px; 
+        text-decoration: none;
+        display: inline-flex; 
+        align-items: center; 
+        gap: 4px;
+        font-size: 13px; 
+        transition: 0.2s;
+        border: none;
+    }
+
+    .btn-simpan:hover {
+        background: #e6c200;
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid #ccc;
+        color: #4A2C2A;
+        font-weight: 500;
+        border-radius: 6px;
+        padding: 6px 14px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-outline:hover {
+        background: #fff9d4;
+    }
+
+    .alert {
+        background: #fff3cd;
+        border: 1px solid #ffeeba;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #856404;
+    }
+</style>
 </head>
-<body>
-    {% include "partials/sidebar.html" %}
 
-    <div class="main-content">
-        <div class="content-card">
-            <h1>{{ judul }}</h1>
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <div class="form-actions">
-                    <button type="submit">💾 Simpan</button>
-                    <a href="{% url 'kelola_akun' %}" class="cancel-btn">❌ Batal</a>
-                </div>
-            </form>
-        </div>
+<body>
+{% include "partials/sidebar.html" %}
+
+<div class="main-content">
+    <div class="form-card">
+        <h2>{{ judul }}</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row g-3">
+                {% for field in form %}
+                    {% if "password" in field.name %}
+                        <div class="col-md-4">
+                            <label>{{ field.label }}</label>
+                            <div class="input-wrapper">
+                                {{ field|add_class:"form-control" }}
+                                <i class="bi bi-eye-slash-fill input-icon toggle-password"></i>
+                            </div>
+                        </div>
+                    {% elif "role" in field.name %}
+                        <div class="col-md-4">
+                            <label>{{ field.label }}</label>
+                            <div class="input-wrapper">
+                                {{ field|add_class:"form-control" }}
+                                <i class="bi bi-caret-down-fill input-icon"></i>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-md-4">
+                            <label>{{ field.label }}</label>
+                            {{ field|add_class:"form-control" }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="text-end mt-4">
+                <a href="{% url 'kelola_akun' %}" class="btn-outline">Batal</a>
+                <button type="submit" class="btn-simpan">Simpan</button>
+            </div>
+
+            {% if form.errors %}
+            <div class="alert mt-4">
+                <ul class="mb-0">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </form>
     </div>
+</div>
+
+<script>
+$(document).on('click', '.toggle-password', function() {
+    const input = $(this).siblings('input');
+    const icon = $(this);
+
+    if (input.attr('type') === 'password') {
+        input.attr('type', 'text');
+        icon.removeClass('bi-eye-slash-fill').addClass('bi-eye-fill');
+    } else {
+        input.attr('type', 'password');
+        icon.removeClass('bi-eye-fill').addClass('bi-eye-slash-fill');
+    }
+});
+</script>
+
 </body>
 </html>

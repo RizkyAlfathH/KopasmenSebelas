@@ -1,155 +1,170 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Detail Admin</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background-color: #f4f3ef;
-      color: #333;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOPASMEN - Detail Admin</title>
 
-    .container {
-      max-width: 900px;
-      margin-left: 300px; /* offset sidebar */
-      padding: 40px 30px;
-    }
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/phosphor-icons"></script>
 
-    /* Card */
-    .card {
-      margin-top: 40px;
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      padding: 30px 35px;
-      transition: all 0.2s ease;
-      width: 1280px;
-    }
+<style>
+* {
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+body {
+  background: #fafafa;
+  color: #333;
+  margin: 0;
+  display: flex;
+}
+a { text-decoration: none; color: inherit; }
 
-    .card:hover {
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    }
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+  padding: 20px 0;
+  position: fixed;
+  height: 100vh;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.08);
+}
 
-    .card-header {
-      font-size: 22px;
-      font-weight: bold;
-      color: #4b2e2e;
-      margin-bottom: 25px;
-      border-bottom: 2px solid #f0e6d2;
-      padding-bottom: 8px;
-    }
+/* Main Content */
+.main-content {
+  margin-left: 260px;
+  padding: 35px;
+  flex: 1;
+}
 
-    .form-row {
-      display: flex;
-      gap: 25px;
-      margin-bottom: 20px;
-    }
+h1 {
+  color: #4A2C2A;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-    .form-group {
-      flex: 1;
-    }
+/* Card */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  margin-bottom: 25px;
+}
 
-    .label {
-      font-weight: 600;
-      color: #5a3c3c;
-      margin-bottom: 6px;
-      display: block;
-      font-size: 14px;
-    }
+/* Layout form */
+.row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+.col {
+  flex: 1;
+  min-width: 220px;
+}
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #4A2C2A;
+}
 
-    .field-box {
-      background: #f9f8f6;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 12px 15px;
-      font-size: 15px;
-      color: #3a3a3a;
-      transition: all 0.2s ease;
-    }
+/* Input (readonly) */
+input[readonly] {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fffefc;
+  font-size: 14px;
+  color: #333;
+}
 
-    .field-box:hover {
-      background: #fffbe8;
-      border-color: #ffd700;
-    }
+/* Tombol */
+.btn-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
 
-    .status {
-      display: inline-block;
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 13px;
-      text-transform: uppercase;
-    }
+/* Tombol utama */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s ease;
+}
+.btn-gold {
+  background: #FFD700;
+  color: #4A2C2A;
+}
+.btn-gold:hover {
+  background: #e6c200;
+}
 
-    .status.aktif {
-      background: #e0f2e9;
-      color: #2e7d32;
-    }
+/* Container tombol kembali */
+.btn-back-container {
+  text-align: right;
+  margin-top: 25px;
+}
 
-    .status.nonaktif {
-      background: #ffe5e5;
-      color: #b71c1c;
-    }
-
-    /* Tombol kembali */
-    .back-button {
-      display: inline-block;
-      margin-top: 25px;
-      text-decoration: none;
-      padding: 10px 18px;
-      background-color: #ffd700;
-      color: #4b2e2e;
-      font-weight: bold;
-      border-radius: 8px;
-      transition: all 0.2s ease;
-    }
-
-    .back-button:hover {
-      background-color: #e6c200;
-      color: #2e1f00;
-    }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .container { margin-left: 20px; padding: 20px; }
-      .form-row { flex-direction: column; gap: 15px; }
-      .card { padding: 25px; }
-    }
-  </style>
+/* Responsive */
+@media(max-width:768px){
+  .row { flex-direction: column; }
+  .main-content { margin-left: 0; }
+  .sidebar { position: relative; width: 100%; height: auto; box-shadow: none; }
+  .btn-wrapper { justify-content: center; margin-top: 25px; }
+}
+</style>
 </head>
+
 <body>
-  {% include "partials/sidebar.html" %}
+  <div class="sidebar">
+    {% include "partials/sidebar.html" %}
+  </div>
 
-  <div class="container">
+  <div class="main-content">
     <div class="card">
-      <div class="card-header">Detail Admin</div>
-
+      <h1>Detail Admin</h1>
       {% if admin %}
-      <div class="form-row">
-        <div class="form-group">
-          <label class="label">No</label>
-          <div class="field-box">{{ nomor_urut }}</div>
+      <div class="row">
+        <div class="col">
+          <label>No:</label>
+          <input type="text" readonly value="{{ nomor_urut }}">
         </div>
-        <div class="form-group">
-          <label class="label">Username</label>
-          <div class="field-box">{{ admin.username }}</div>
+        <div class="col">
+          <label>Username:</label>
+          <input type="text" readonly value="{{ admin.username }}">
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label class="label">Role</label>
-          <div class="field-box">{{ admin.role }}</div>
+      <div class="row">
+        <div class="col">
+          <label>Role:</label>
+          <input type="text" readonly value="{{ admin.role }}">
         </div>
       </div>
 
       {% else %}
       <p>{{ error }}</p>
       {% endif %}
+    </div>
 
-      <a href="{% url 'kelola_akun' %}" class="back-button">&#8592; Kembali</a>
+    <div class="btn-back-container">
+      <a href="{% url 'kelola_akun' %}" class="btn btn-gold">
+        Kembali
+      </a>
     </div>
   </div>
 </body>
