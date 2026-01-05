@@ -203,10 +203,10 @@
             <tr>
               <td>{{ row.no_anggota }}</td>
               <td>{{ row.nama_anggota }}</td>
-              <td>Rp {{ row.total_pokok|floatformat:0 }}</td>
-              <td>Rp {{ row.total_wajib|floatformat:0 }}</td>
-              <td>Rp {{ row.total_sukarela|floatformat:0 }}</td>
-              <td>Rp {{ row.total_dana_sosial|floatformat:0 }}</td>
+              <td class="rupiah-cell" data-value="{{ row.total_pokok|floatformat:0 }}"></td>
+              <td class="rupiah-cell" data-value="{{ row.total_wajib|floatformat:0 }}"></td>
+              <td class="rupiah-cell" data-value="{{ row.total_sukarela|floatformat:0 }}"></td>
+              <td class="rupiah-cell" data-value="{{ row.total_dana_sosial|floatformat:0 }}"></td>
               <td class="action-links">
                 <a href="{% url 'simpanan_anggota' row.kode_anggota %}" class="btn-view" title="Detail"><i class="ph-bold ph-eye"></i></a>
                 <a href="{% url 'edit_simpanan' row.kode_anggota %}" class="btn-edit" title="Edit"><i class="ph-bold ph-pencil-simple"></i></a>
@@ -339,6 +339,18 @@
         });
       });
     });
+    function formatRupiah(angka) {
+      if (!angka) return 'Rp 0';
+      return 'Rp ' + Number(angka).toLocaleString('id-ID');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.rupiah-cell').forEach(td => {
+        const value = td.dataset.value;
+        td.textContent = formatRupiah(value);
+      });
+    });
+
   </script>
 </body>
 </html>

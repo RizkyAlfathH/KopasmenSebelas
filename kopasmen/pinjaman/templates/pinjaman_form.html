@@ -265,7 +265,30 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
+// =======================
+// FORMAT RIBUAN (TITIK)
+// =======================
+function formatRibuan(angka) {
+    return angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+// =======================
+// SETUP INPUT RUPIAH
+// =======================
+function setupRupiahInput(id, callback = null) {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+        let value = this.value.replace(/\D/g, '');
+        if (value.length > 16) value = value.slice(0, 16);
+        this.value = formatRibuan(value);
+        if (callback) callback();
+    });
+}
+
 $(document).ready(function() {
+
     // Select2
     $('#id_nomor_anggota').select2({
         placeholder: "Cari anggota...",
@@ -290,48 +313,49 @@ $(document).ready(function() {
         allowInput: true
     });
 
-    // Format otomatis Rupiah (tanpa titik desimal)
-    const jumlahInput = document.getElementById('id_jumlah_pinjaman');
-    jumlahInput.addEventListener('input', function(e) {
-        let value = this.value.replace(/\D/g, ''); // hapus semua non-digit
-        if (value.length > 16) value = value.slice(0, 16); // batasi 16 digit
-        this.value = new Intl.NumberFormat('id-ID').format(value);
-        hitungJasa();
-    });
+    // 🔥 SEMUA INPUT NOMINAL PAKAI SATU FORMAT
+    setupRupiahInput('id_jumlah_pinjaman', hitungJasa);
+    setupRupiahInput('id_angsuran_per_bulan');
+    setupRupiahInput('id_jasa_rupiah');
 
-    // Hitung jasa otomatis
-    document.getElementById('id_jasa_persen').addEventListener('input', hitungJasa);
+    // Hitung jasa
+    $('#id_jasa_persen').on('input', hitungJasa);
 });
 
+// =======================
+// HITUNG JASA
+// =======================
 function hitungJasa() {
-    let jumlahText = document.getElementById('id_jumlah_pinjaman').value.replace(/\./g, '').replace(/,/g, '');
-    let jumlah = parseFloat(jumlahText) || 0;
-    let persen = parseFloat(document.getElementById('id_jasa_persen').value) || 0;
+    let jumlah = $('#id_jumlah_pinjaman').val().replace(/\./g, '');
+    let persen = parseFloat($('#id_jasa_persen').val()) || 0;
+
+    jumlah = parseInt(jumlah) || 0;
 
     if (jumlah > 0 && persen > 0) {
         let jasa = Math.round(jumlah * (persen / 100));
-        document.getElementById('id_jasa_rupiah').value = new Intl.NumberFormat('id-ID').format(jasa);
+        $('#id_jasa_rupiah').val(formatRibuan(jasa.toString()));
     } else {
-        document.getElementById('id_jasa_rupiah').value = '';
+        $('#id_jasa_rupiah').val('');
     }
 }
 
-// Hapus format sebelum submit ke Django
+// =======================
+// STRIP FORMAT SAAT SUBMIT
+// =======================
 $('form').on('submit', function() {
-    let jumlah = $('#id_jumlah_pinjaman').val().replace(/\./g, '').replace(/,/g, '');
-    $('#id_jumlah_pinjaman').val(jumlah);
-
-    let jasaRupiah = $('#id_jasa_rupiah').val().replace(/\./g, '').replace(/,/g, '');
-    $('#id_jasa_rupiah').val(jasaRupiah);
+    ['id_jumlah_pinjaman', 'id_angsuran_per_bulan', 'id_jasa_rupiah'].forEach(function(id) {
+        let el = $('#' + id);
+        if (el.length) {
+            el.val(el.val().replace(/\./g, ''));
+        }
+    });
 
     let jasaPersen = $('#id_jasa_persen').val();
-    // pastikan tidak lebih dari 2 desimal
     if (!/^\d+(\.\d{1,2})?$/.test(jasaPersen)) {
         alert("Pastikan persentase jasa tidak lebih dari 2 angka di belakang koma!");
         return false;
     }
 });
-
 </script>
 
 </body>

@@ -23,24 +23,58 @@ class PinjamanForm(forms.ModelForm):
             'nomor_anggota': forms.Select(attrs={'class': 'form-control select2'}),
             'id_jenis_pinjaman': forms.Select(attrs={'class': 'form-control'}),
             'id_kategori_jasa': forms.Select(attrs={'class': 'form-control'}),
-            'id_admin': forms.HiddenInput(),  # <--- BIKIN HIDDEN
-            'tanggal_meminjam': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'id_admin': forms.HiddenInput(),
+
+            'tanggal_meminjam': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+
             'jatuh_tempo': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': 1,
                 'max': 36,
                 'placeholder': 'Masukkan jumlah bulan (1-36)'
             }),
-            'jumlah_pinjaman': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Masukkan jumlah pinjaman'}),
-            'angsuran_per_bulan': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Masukkan jumlah angsuran per bulan'}),
-            'jasa_persen': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Masukkan persentase jasa'}),
-            'jasa_rupiah': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+
+            'jumlah_pinjaman': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Masukkan jumlah pinjaman'
+            }),
+
+            'angsuran_per_bulan': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Masukkan jumlah angsuran per bulan'
+            }),
+
+            'jasa_persen': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Masukkan persentase jasa'
+            }),
+
+            'jasa_rupiah': forms.TextInput(attrs={
+                'class': 'form-control',
+                'readonly': 'readonly'
+            }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # supaya tidak error "This field is required."
         self.fields['id_admin'].required = False
+
+    def clean_jumlah_pinjaman(self):
+        value = self.cleaned_data.get('jumlah_pinjaman')
+        if isinstance(value, str):
+            value = value.replace('.', '').replace(',', '')
+        return Decimal(value)
+
+    def clean_angsuran_per_bulan(self):
+        value = self.cleaned_data.get('angsuran_per_bulan')
+        if isinstance(value, str):
+            value = value.replace('.', '').replace(',', '')
+        return Decimal(value)
 
     def clean_jasa_rupiah(self):
         cleaned_data = super().clean()
@@ -67,12 +101,13 @@ class PinjamanForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+
         jumlah_pinjaman = cleaned_data.get('jumlah_pinjaman')
         jasa_persen = cleaned_data.get('jasa_persen')
 
         if jumlah_pinjaman and jasa_persen:
-            jasa_rupiah = jumlah_pinjaman * (jasa_persen / Decimal(100))
-            cleaned_data['jasa_rupiah'] = jasa_rupiah.quantize(Decimal('0.01'))
+            jasa_rupiah = jumlah_pinjaman * (jasa_persen / Decimal('100'))
+            cleaned_data['jasa_rupiah'] = jasa_rupiah.quantize(Decimal('1'))
 
         cleaned_data['status'] = 'Belum Lunas'
         return cleaned_data

@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Sum, Q, F, Value, CharField
+from django.db.models import Sum, Q, F, Value, CharField, When, Case
 from django.contrib import messages
+
 from .forms import SimpananForm, EditSimpananForm, PenarikanForm
-from .models import Simpanan, Anggota, JenisSimpanan, Penarikan
+from .models import HistoryTabungan, Simpanan, Anggota, JenisSimpanan, Penarikan, Admin
 from admin_koperasi.models import Admin
 from django.core.paginator import Paginator
 from django.db import models
@@ -21,56 +22,94 @@ from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
 from num2words import num2words
 from django.utils import timezone
+from django.db import transaction
 
 
+@transaction.atomic
 def tambah_simpanan(request):
-    """Tambah data simpanan baru"""
     if not request.session.get('admin_id'):
         return redirect('admin_koperasi:login')
 
+    admin_login = get_object_or_404(Admin, pk=request.session['admin_id'])
     role = request.session.get('admin_role')
     username = request.session.get('admin_username')
-    admin = Admin.objects.filter(id_admin=request.session['admin_id']).first()
-
-    anggotas = Anggota.objects.all()  # masih dipakai kalau perlu list
 
     if request.method == "POST":
         form = SimpananForm(request.POST)
         if form.is_valid():
-            simpanan = form.save(commit=False)
-            simpanan.admin = admin  # isi otomatis dari session
-            if not simpanan.tanggal_menyimpan:
-                simpanan.tanggal_menyimpan = datetime.date.today()
-            simpanan.save()
-            messages.success(request, "Data simpanan berhasil ditambahkan.")
-            return redirect("daftar_simpanan")
-    else:
-        form = SimpananForm(initial={
-            "admin": admin,
-            "tanggal_menyimpan": datetime.date.today()
-        })
+            data = form.cleaned_data
+            anggota = data['anggota']
+            jenis_simpanan = data['jenis_simpanan']
+            jumlah = data['jumlah_menyimpan']
+            tanggal = data['tanggal_menyimpan']
+            dana_sosial = data.get('dana_sosial') or 0
 
-    context = {
+            # cek apakah sudah ada saldo aktif untuk anggota + jenis
+            simpanan = Simpanan.objects.filter(
+                anggota=anggota,
+                jenis_simpanan=jenis_simpanan
+            ).first()
+
+            if simpanan:
+                # update saldo aktif
+                simpanan.jumlah_menyimpan += jumlah
+                if dana_sosial:
+                    simpanan.dana_sosial += dana_sosial
+                simpanan.tanggal_menyimpan = tanggal  # optional, simpan terakhir kali
+                simpanan.admin = admin_login
+                simpanan.save()
+            else:
+                # buat record baru
+                simpanan = Simpanan.objects.create(
+                    anggota=anggota,
+                    jenis_simpanan=jenis_simpanan,
+                    jumlah_menyimpan=jumlah,
+                    dana_sosial=dana_sosial,
+                    tanggal_menyimpan=tanggal,
+                    admin=admin_login
+                )
+
+            # catat transaksi di history
+            HistoryTabungan.objects.create(
+                anggota=anggota,
+                jenis_simpanan=jenis_simpanan,
+                jumlah=jumlah,
+                tanggal=tanggal,
+                jenis_transaksi='SETOR'
+            )
+
+            messages.success(request, "Simpanan berhasil ditambahkan.")
+            return redirect('daftar_simpanan')
+    else:
+        form = SimpananForm()
+
+    return render(request, "simpanan_form.html", {
+        "form": form,
         "username": username,
         "role": role,
-        "admin": admin,
-        "anggotas": anggotas,
-        "form": form,
-    }
-    return render(request, "simpanan_form.html", context)
+        "admin": admin_login,
+    })
+
 
 def autocomplete_anggota(request):
-    term = request.GET.get("term", "")
+    term = request.GET.get("q", "")
     results = []
+
     if term:
         anggotas = Anggota.objects.filter(
             Q(nama__icontains=term) | Q(nip__icontains=term)
         )[:10]
+
         results = [
-            {"id": a.pk, "nama": a.nama, "nomor_anggota": a.nomor_anggota}
+            {
+                "id": a.pk,
+                "text": f"{a.nama} ({a.nomor_anggota})"
+            }
             for a in anggotas
         ]
-    return JsonResponse(results, safe=False)
+
+    return JsonResponse({"results": results})
+
 
 def cek_dana_sosial(request, anggota_id, tanggal):
     try:
@@ -89,82 +128,59 @@ def cek_dana_sosial(request, anggota_id, tanggal):
         return JsonResponse({"error": str(e)}, status=400)
 
 def daftar_simpanan(request):
-    """Daftar total simpanan semua anggota dengan pagination (saldo aktual)"""
     if not request.session.get('admin_id'):
         return redirect('admin_koperasi:login')
 
     role = request.session.get('admin_role')
     username = request.session.get('admin_username')
 
-    admins = Admin.objects.all()
     anggotas = Anggota.objects.all()
-
     data_list = []
-    for anggota in anggotas:
-        # Hitung total simpanan per jenis
-        total_pokok = (
-            Simpanan.objects.filter(anggota=anggota, jenis_simpanan__id_jenis_simpanan=1)
-            .aggregate(total=Sum('jumlah_menyimpan'))['total'] or 0
-        )
-        total_wajib = (
-            Simpanan.objects.filter(anggota=anggota, jenis_simpanan__id_jenis_simpanan=2)
-            .aggregate(total=Sum('jumlah_menyimpan'))['total'] or 0
-        )
-        total_sukarela = (
-            Simpanan.objects.filter(anggota=anggota, jenis_simpanan__id_jenis_simpanan=3)
-            .aggregate(total=Sum('jumlah_menyimpan'))['total'] or 0
-        )
 
-        # Dana sosial (langsung dari field dana_sosial)
+    for anggota in anggotas:
+        def get_saldo(jenis_id):
+            return (
+                Simpanan.objects.filter(
+                    anggota=anggota,
+                    jenis_simpanan__id_jenis_simpanan=jenis_id
+                ).aggregate(total=Sum('jumlah_menyimpan'))['total'] or 0
+            )
+
+        total_pokok = get_saldo(1)
+        total_wajib = get_saldo(2)
+        total_sukarela = get_saldo(3)
+
         total_dana_sosial = (
             Simpanan.objects.filter(anggota=anggota)
             .aggregate(total=Sum('dana_sosial'))['total'] or 0
-        )
-
-        # Kurangi total penarikan
-        total_penarikan_pokok = (
-            Penarikan.objects.filter(anggota=anggota, jenis_simpanan__id_jenis_simpanan=1)
-            .aggregate(total=Sum('jumlah_penarikan'))['total'] or 0
-        )
-        total_penarikan_wajib = (
-            Penarikan.objects.filter(anggota=anggota, jenis_simpanan__id_jenis_simpanan=2)
-            .aggregate(total=Sum('jumlah_penarikan'))['total'] or 0
-        )
-        total_penarikan_sukarela = (
-            Penarikan.objects.filter(anggota=anggota, jenis_simpanan__id_jenis_simpanan=3)
-            .aggregate(total=Sum('jumlah_penarikan'))['total'] or 0
         )
 
         data_list.append({
             'kode_anggota': anggota.nomor_anggota,
             'no_anggota': anggota.nomor_anggota,
             'nama_anggota': anggota.nama,
-            'total_pokok': total_pokok - total_penarikan_pokok,
-            'total_wajib': total_wajib - total_penarikan_wajib,
-            'total_sukarela': total_sukarela - total_penarikan_sukarela,
-            'total_dana_sosial': total_dana_sosial,  # ⬅️ tambahin ini
+            'total_pokok': total_pokok,
+            'total_wajib': total_wajib,
+            'total_sukarela': total_sukarela,
+            'total_dana_sosial': total_dana_sosial,
         })
 
-    # Pagination per 20 data
     paginator = Paginator(data_list, 20)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator.get_page(request.GET.get("page"))
 
-    context = {
+    return render(request, "daftar_simpanan.html", {
         'username': username,
         'role': role,
-        'admins': admins,
-        'anggotas': anggotas,
         'data': page_obj,
         'page_obj': page_obj,
-    }
-    return render(request, "daftar_simpanan.html", context)
+    })
+
 
 def detail_simpanan(request, id_simpanan):
-    """Detail simpanan anggota lengkap dengan riwayat setoran & penarikan"""
     if not request.session.get('admin_id'):
         return redirect('admin_koperasi:login')
 
+    admin_login = get_object_or_404(Admin, pk=request.session['admin_id'])
     role = request.session.get('admin_role')
     username = request.session.get('admin_username')
 
@@ -172,118 +188,119 @@ def detail_simpanan(request, id_simpanan):
     anggota = simpanan.anggota
     jenis = simpanan.jenis_simpanan
 
-    # Ambil tanggal pertama simpanan untuk jenis ini
-    first_simpanan = Simpanan.objects.filter(
-        anggota=anggota, jenis_simpanan=jenis
-    ).order_by('tanggal_menyimpan').first()
-    tanggal_tabungan = first_simpanan.tanggal_menyimpan if first_simpanan else None
+    tanggal_filter = request.GET.get('tanggal')
 
-    # Ambil semua setoran (dikasih pk & tipe untuk template)
-    setoran_list = Simpanan.objects.filter(
-        anggota=anggota, jenis_simpanan=jenis
-    ).annotate(
-        jenis_trans=Value('Setoran', output_field=CharField()),
-        tgl=F('tanggal_menyimpan'),
-        jumlah=F('jumlah_menyimpan'),
-        pk=F('id_simpanan'),
-        tipe=Value('simpanan', output_field=CharField())
+    history = HistoryTabungan.objects.filter(
+        anggota=anggota,
+        jenis_simpanan=jenis
     )
 
-    # Ambil semua penarikan (dikasih pk & tipe untuk template)
-    penarikan_list = Penarikan.objects.filter(
-        anggota=anggota, jenis_simpanan=jenis
-    ).annotate(
-        jenis_trans=Value('Penarikan', output_field=CharField()),
-        tgl=F('tanggal_penarikan'),
-        jumlah=F('jumlah_penarikan'),
-        pk=F('id_penarikan'),
-        tipe=Value('penarikan', output_field=CharField())
-    )
+    if tanggal_filter:
+        history = history.filter(tanggal=tanggal_filter)
 
-    # Gabungkan setoran & penarikan, urut descending
-    history = sorted(
-        chain(setoran_list, penarikan_list),
-        key=attrgetter('tgl'),
-        reverse=True
-    )
-
-    # Hitung saldo
-    total_setor = sum(h.jumlah for h in setoran_list)
-    total_tarik = sum(h.jumlah for h in penarikan_list)
-    saldo_jenis = total_setor - total_tarik
+    history = history.annotate(
+        nominal=F('jumlah'),
+        tanggal_transaksi=F('tanggal'),
+        jenis_trans=Case(
+            When(jenis_transaksi='SETOR', then=Value('Setoran')),
+            When(jenis_transaksi='TARIK', then=Value('Penarikan')),
+            When(jenis_transaksi='KOREKSI', then=Value('Koreksi')),
+            default=Value('-'),
+            output_field=CharField()
+        )
+    ).order_by('-tanggal')
 
     context = {
-        'username': username,
-        'role': role,
         'simpanan': simpanan,
-        'saldo_jenis': saldo_jenis,
         'history': history,
-        'tanggal_tabungan': tanggal_tabungan,
+        'saldo_jenis': simpanan.jumlah_menyimpan,  # 🔥 DARI DB
+        "username": username,
+        "role": role,
+        "admin": admin_login,
     }
-    return render(request, "detail_simpanan.html", context)
+    return render(request, 'detail_simpanan.html', context)
+
 
 def edit_simpanan(request, nomor_anggota):
     if not request.session.get('admin_id'):
         return redirect('admin_koperasi:login')
 
-    admin_id = request.session.get('admin_id')
-    admin_login = get_object_or_404(Admin, pk=admin_id)
+    admin_login = get_object_or_404(Admin, pk=request.session['admin_id'])
     username = request.session.get('admin_username')
     role = request.session.get('admin_role')
 
     anggota = get_object_or_404(Anggota, nomor_anggota=nomor_anggota)
 
-    # Ambil simpanan terakhir tiap jenis
-    simpanan_terakhir = {}
+    # Ambil simpanan terakhir per jenis
+    simpanan_map = {}
     for jenis in ["Simpanan Pokok", "Simpanan Wajib", "Simpanan Sukarela"]:
-        s = Simpanan.objects.filter(
+        simpanan_map[jenis] = Simpanan.objects.filter(
             anggota=anggota,
             jenis_simpanan__nama_jenis=jenis
         ).order_by('-tanggal_menyimpan').first()
-        simpanan_terakhir[jenis] = s.jumlah_menyimpan if s else 0
 
     if request.method == "POST":
-        form = EditSimpananForm(request.POST, admin_login=admin_login)
+        form = EditSimpananForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
-            jenis_mapping = {
+
+            mapping = {
                 "Simpanan Pokok": cd['simpanan_pokok'],
                 "Simpanan Wajib": cd['simpanan_wajib'],
-                "Simpanan Sukarela": cd['simpanan_sukarela']
+                "Simpanan Sukarela": cd['simpanan_sukarela'],
             }
-            for jenis_nama, jumlah in jenis_mapping.items():
-                if jumlah is not None:
-                    jenis_obj = get_object_or_404(JenisSimpanan, nama_jenis=jenis_nama)
+
+            ada_perubahan = False
+
+            for jenis_nama, input_jumlah in mapping.items():
+                simpanan = simpanan_map[jenis_nama]
+
+                # kosong / None / 0 → skip
+                if not input_jumlah or input_jumlah <= 0:
+                    continue
+
+                # ambil jenis
+                jenis_obj = get_object_or_404(JenisSimpanan, nama_jenis=jenis_nama)
+
+                if simpanan:
+                    # ADA → cek apakah berubah
+                    if simpanan.jumlah_menyimpan != input_jumlah:
+                        simpanan.jumlah_menyimpan = input_jumlah
+                        simpanan.tanggal_menyimpan = cd['tanggal_menyimpan']
+                        simpanan.admin = admin_login
+                        simpanan.save()
+                        ada_perubahan = True
+                else:
+                    # BELUM ADA → CREATE HANYA JIKA > 0
                     Simpanan.objects.create(
                         anggota=anggota,
                         admin=admin_login,
                         jenis_simpanan=jenis_obj,
                         tanggal_menyimpan=cd['tanggal_menyimpan'],
-                        jumlah_menyimpan=jumlah,
+                        jumlah_menyimpan=input_jumlah
                     )
-            last_simpanan = Simpanan.objects.filter(anggota=anggota).order_by('-id_simpanan').first()
-            messages.success(request, "Data simpanan berhasil diperbarui.")
-            return redirect("detail_simpanan", id_simpanan=last_simpanan.id_simpanan)
-    else:
-        form = EditSimpananForm(
-            initial={
-                'anggota': anggota.pk,
-                'admin': admin_login.pk,
-                'tanggal_menyimpan': timezone.now().date(),
-                'simpanan_pokok': simpanan_terakhir["Simpanan Pokok"],
-                'simpanan_wajib': simpanan_terakhir["Simpanan Wajib"],
-                'simpanan_sukarela': simpanan_terakhir["Simpanan Sukarela"],
-            },
-            admin_login=admin_login
-        )
+                    ada_perubahan = True
 
-    context = {
+            if ada_perubahan:
+                messages.success(request, "Simpanan berhasil diperbarui.")
+            else:
+                messages.info(request, "Tidak ada perubahan data simpanan.")
+
+            return redirect('simpanan_anggota', nomor_anggota=anggota.nomor_anggota)
+    else:
+        form = EditSimpananForm(initial={
+            'tanggal_menyimpan': timezone.now().date(),
+            'simpanan_pokok': simpanan_map["Simpanan Pokok"].jumlah_menyimpan if simpanan_map["Simpanan Pokok"] else '',
+            'simpanan_wajib': simpanan_map["Simpanan Wajib"].jumlah_menyimpan if simpanan_map["Simpanan Wajib"] else '',
+            'simpanan_sukarela': simpanan_map["Simpanan Sukarela"].jumlah_menyimpan if simpanan_map["Simpanan Sukarela"] else '',
+        })
+
+    return render(request, "edit_simpanan.html", {
         'form': form,
+        'anggota': anggota,
         'username': username,
         'role': role,
-        'anggota': anggota,
-    }
-    return render(request, "edit_simpanan.html", context)
+    })
 
 
 def hapus_simpanan(request, nomor_anggota):
@@ -310,6 +327,7 @@ def hapus_simpanan(request, nomor_anggota):
     }
     return render(request, "daftar_simpanan.html", context)
 
+@transaction.atomic
 def tambah_penarikan(request, nomor_anggota, jenis):
     if not request.session.get('admin_id'):
         return redirect('admin_koperasi:login')
@@ -318,50 +336,75 @@ def tambah_penarikan(request, nomor_anggota, jenis):
     username = request.session.get('admin_username')
 
     anggota = get_object_or_404(Anggota, nomor_anggota=nomor_anggota)
-    jenis_obj = get_object_or_404(JenisSimpanan, id_jenis_simpanan=jenis)
-
-    # Hitung saldo sebelum form
-    total_simpanan = (
-        Simpanan.objects.filter(anggota=anggota, jenis_simpanan=jenis_obj)
-        .aggregate(total=Sum("jumlah_menyimpan"))["total"] or 0
-    )
-    total_penarikan = (
-        Penarikan.objects.filter(anggota=anggota, jenis_simpanan=jenis_obj)
-        .aggregate(total=Sum("jumlah_penarikan"))["total"] or 0
-    )
-    saldo = total_simpanan - total_penarikan
+    jenis_obj = get_object_or_404(JenisSimpanan, pk=jenis)
 
     if request.method == "POST":
-        form = PenarikanForm(request.POST)
+        form = PenarikanForm(
+            request.POST,
+            anggota=anggota,
+            jenis_simpanan=jenis_obj
+        )
+
         if form.is_valid():
+            jumlah = form.cleaned_data['jumlah_penarikan']
+
+            simpanan = Simpanan.objects.select_for_update().filter(
+                anggota=anggota,
+                jenis_simpanan=jenis_obj
+            ).first()
+
+            if not simpanan:
+                messages.error(request, "Saldo simpanan tidak ditemukan.")
+                return redirect('simpanan_anggota', nomor_anggota)
+
+            if jumlah > simpanan.jumlah_menyimpan:
+                messages.error(request, "Saldo tidak mencukupi.")
+                return redirect(request.path)
+
+            simpanan.jumlah_menyimpan -= jumlah
+            simpanan.save()
+
             penarikan = form.save(commit=False)
             penarikan.anggota = anggota
             penarikan.jenis_simpanan = jenis_obj
-            penarikan.admin = Admin.objects.filter(id_admin=request.session['admin_id']).first()
+            penarikan.admin_id = request.session['admin_id']
+            penarikan.save()
 
-            if penarikan.jumlah_penarikan > saldo:
-                messages.error(request, "Saldo tidak mencukupi untuk penarikan.")
-            else:
-                penarikan.save()
-                messages.success(request, f"Penarikan {jenis_obj.nama_jenis} berhasil.")
-                return redirect('simpanan_anggota', nomor_anggota=nomor_anggota)
-        else:
-            messages.error(request, "Terjadi kesalahan. Silakan periksa kembali form.")
+            HistoryTabungan.objects.create(
+                anggota=anggota,
+                jenis_simpanan=jenis_obj,
+                jumlah=jumlah,
+                tanggal=penarikan.tanggal_penarikan,
+                jenis_transaksi='TARIK'
+            )
+
+            messages.success(request, "Penarikan berhasil.")
+            return redirect('simpanan_anggota', nomor_anggota)
+
     else:
-        form = PenarikanForm(initial={
-            'anggota': anggota,
-            'jenis_simpanan': jenis_obj,
-        })
+        form = PenarikanForm(
+            anggota=anggota,
+            jenis_simpanan=jenis_obj
+        )
 
-    context = {
-        'username': username,
-        'role': role,
-        'form': form,
-        'anggota': anggota,
-        'jenis': jenis_obj,
-        'saldo': saldo,  # kirim saldo ke template
-    }
-    return render(request, 'penarikan_form.html', context)
+    simpanan = Simpanan.objects.filter(
+        anggota=anggota,
+        jenis_simpanan=jenis_obj
+    ).first()
+
+    saldo = simpanan.jumlah_menyimpan if simpanan else 0
+
+
+    return render(request, "penarikan_form.html", {
+        "form": form,
+        "anggota": anggota,
+        "jenis": jenis_obj,
+        "saldo": saldo,
+        "role": role,
+        "username": username,
+    })
+
+
 
 def simpanan_anggota(request, nomor_anggota):
     if not request.session.get('admin_id'):
@@ -371,44 +414,31 @@ def simpanan_anggota(request, nomor_anggota):
     username = request.session.get('admin_username')
 
     anggota = get_object_or_404(Anggota, nomor_anggota=nomor_anggota)
-
     data_saldo = []
-    jenis_semua = JenisSimpanan.objects.all()  # ambil semua jenis dari master
 
-    for jenis in jenis_semua:
-        total_simpanan = (
-            Simpanan.objects.filter(anggota=anggota, jenis_simpanan=jenis)
-            .aggregate(total=models.Sum("jumlah_menyimpan"))["total"] or 0
-        )
-        total_penarikan = (
-            Penarikan.objects.filter(anggota=anggota, jenis_simpanan=jenis)
-            .aggregate(total=models.Sum("jumlah_penarikan"))["total"] or 0
-        )
+    for jenis in JenisSimpanan.objects.all():
+        simpanan = Simpanan.objects.filter(
+            anggota=anggota,
+            jenis_simpanan=jenis
+        ).first()
 
-        saldo = total_simpanan - total_penarikan
-
-        # kalau belum ada transaksi sama sekali (setoran dan penarikan = 0), skip
-        if saldo == 0 and total_simpanan == 0 and total_penarikan == 0:
+        if not simpanan or simpanan.jumlah_menyimpan <= 0:
             continue
-
-        last_simpanan = Simpanan.objects.filter(
-            anggota=anggota, jenis_simpanan=jenis
-        ).order_by('-tanggal_menyimpan').first()
 
         data_saldo.append({
             'jenis': jenis.nama_jenis,
             'jenis_id': jenis.id_jenis_simpanan,
-            'saldo': saldo,
-            'last_simpanan': last_simpanan,
+            'saldo': simpanan.jumlah_menyimpan,
+            'last_simpanan': simpanan,
         })
 
-    context = {
+    return render(request, "simpanan_anggota.html", {
         'username': username,
         'role': role,
         'anggota': anggota,
         'data_saldo': data_saldo,
-    }
-    return render(request, "simpanan_anggota.html", context)
+    })
+
 
 def detail_transaksi(request, id):
     if not request.session.get('admin_id'):
@@ -418,7 +448,7 @@ def detail_transaksi(request, id):
     username = request.session.get('admin_username')
     admin = Admin.objects.filter(id_admin=request.session['admin_id']).first()
 
-    transaksi = get_object_or_404(Simpanan, id_simpanan=id)
+    transaksi = get_object_or_404(HistoryTabungan, id_history=id)
     tipe = transaksi.jenis_simpanan
 
     return render(request, "detail_transaksi.html", {

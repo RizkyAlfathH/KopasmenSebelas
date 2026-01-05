@@ -11,122 +11,104 @@
 <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
 
 <style>
-    * {
-        font-family: 'Poppins', sans-serif;
-        box-sizing: border-box;
-    }
+* {
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
 
-    body {
-        background: #f5f5f5;
-        margin: 0;
-        display: flex;
-    }
+body {
+    background: #f5f5f5;
+    margin: 0;
+    display: flex;
+}
 
-    /* Sidebar */
-    .sidebar {
-        width: 280px;
-        background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
-        padding: 20px 0;
-        position: fixed;
-        height: 100vh;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    }
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
 
-    /* Main content */
-    .main-content {
-        margin-left: 280px;
-        padding: 30px;
-        flex: 1;
-    }
+/* Main content */
+.main-content {
+    margin-left: 280px;
+    padding: 30px;
+    flex: 1;
+}
 
-    .form-card {
-        background: white;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-    }
+.form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+}
 
-    h1 {
-        margin-bottom: 25px;
-        color: #4A2C2A;
-        font-size: 22px;
-        border-bottom: 2px solid #FFD700;
-        padding-bottom: 10px;
-    }
+h1 {
+    margin-bottom: 25px;
+    color: #4A2C2A;
+    font-size: 22px;
+    border-bottom: 2px solid #FFD700;
+    padding-bottom: 10px;
+}
 
-    /* === GRID 2 KOLOM === */
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 25px 40px;
-    }
+/* Grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px 40px;
+}
 
-    label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 6px;
-        color: #4A2C2A;
-        font-size: 14px;
-    }
+label {
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #4A2C2A;
+    font-size: 14px;
+}
 
-    input.form-control, select.form-control {
-        width: 100%;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 14px;
-        padding: 8px 12px;
-        transition: 0.2s;
-    }
+input.form-control {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    padding: 8px 12px;
+}
 
-    input:focus, select:focus {
-        border-color: #FFD700;
-        box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
-        outline: none;
-    }
+input:focus {
+    border-color: #FFD700;
+    box-shadow: 0 0 5px rgba(255,215,0,.4);
+    outline: none;
+}
 
-    .form-actions {
-        margin-top: 35px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
+.form-actions {
+    margin-top: 35px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
 
-    .btn-simpan {
-        background: #FFD700;
-        color: #4A2C2A;
-        font-weight: 600;
-        padding: 6px 14px;
-        border-radius: 6px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 13px;
-        transition: 0.2s;
-        border: none;
-        cursor: pointer;
-    }
+.btn-simpan {
+    background: #FFD700;
+    color: #4A2C2A;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
 
-    .btn-simpan:hover { background: #e6c200; }
+.btn-outline {
+    background: transparent;
+    border: 1px solid #ccc;
+    color: #4A2C2A;
+    border-radius: 6px;
+    padding: 6px 14px;
+    text-decoration: none;
+}
 
-    .btn-outline {
-        background: transparent;
-        border: 1px solid #ccc;
-        color: #4A2C2A;
-        font-weight: 500;
-        border-radius: 6px;
-        padding: 6px 14px;
-        font-size: 13px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        text-decoration: none;
-        transition: 0.2s;
-    }
-
-    .btn-outline:hover { background: #fff9d4; }
-
-    /* Flatpickr (tampilan mirip AdminLTE) */
+/* Flatpickr (tampilan mirip AdminLTE) */
     .flatpickr-calendar {
         border-radius: 10px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.15);
@@ -146,6 +128,75 @@
     .flatpickr-day:hover {
         background: #fff3cd;
     }
+
+/* ================= MODAL ================= */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 9999;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-box {
+    background: white;
+    width: 360px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    animation: pop .25s ease;
+}
+
+@keyframes pop {
+    from { transform: scale(.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header i {
+    font-size: 26px;
+    color: #e74c3c;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #4A2C2A;
+}
+
+.modal-body {
+    padding: 20px;
+    font-size: 14px;
+}
+
+.modal-footer {
+    padding: 14px 20px;
+    text-align: right;
+    border-top: 1px solid #eee;
+}
+
+.btn-modal {
+    background: #FFD700;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
 </style>
 </head>
 
@@ -153,58 +204,109 @@
 {% include "partials/sidebar.html" %}
 
 <div class="main-content">
-    <div class="form-card">
-        <h1>Penarikan Simpanan</h1>
+<div class="form-card">
+<h1>Penarikan Simpanan</h1>
 
-        <form method="post">
-            {% csrf_token %}
+<form method="post">
+{% csrf_token %}
 
-            <div class="form-grid">
+<div class="form-grid">
+    <div>
+        <label>Nama Anggota</label>
+        <input type="text" value="{{ anggota.nama }}" class="form-control" disabled>
+    </div>
 
-                <!-- Anggota -->
-                <div>
-                    <label>Nama Anggota</label>
-                    <input type="text" value="{{ anggota.nama }}" class="form-control" disabled>
-                </div>
+    <div>
+        <label>Nomor Anggota</label>
+        <input type="text" value="{{ anggota.nomor_anggota }}" class="form-control" disabled>
+    </div>
 
-                <div>
-                    <label>Nomor Anggota</label>
-                    <input type="text" value="{{ anggota.nomor_anggota }}" class="form-control" disabled>
-                </div>
+    <div>
+        <label>Tanggal Penarikan</label>
+        {{ form.tanggal_penarikan|add_class:"form-control datepicker" }}
+    </div>
 
-                <!-- Field Form Django -->
-                <div>
-                    <label for="id_tanggal_penarikan">Tanggal Penarikan</label>
-                    {{ form.tanggal_penarikan|add_class:"form-control datepicker" }}
-                </div>
-
-                <div>
-                    <label for="id_jumlah_penarikan">Jumlah Penarikan</label>
-                    {{ form.jumlah_penarikan|add_class:"form-control"|attr:"placeholder:Masukkan jumlah" }}
-                </div>
-
-            </div>
-
-            <div class="form-actions">
-                <a href="{% url 'simpanan_anggota' anggota.nomor_anggota %}" class="btn-outline">
-                    Batal
-                </a>
-                <button type="submit" class="btn-simpan">
-                    <i class="ph-caret-up-bold"></i> Tarik
-                </button>
-            </div>
-        </form>
+    <div>
+        <label>Jumlah Penarikan</label>
+        <input type="text"
+               id="id_jumlah_penarikan"
+               name="jumlah_penarikan"
+               class="form-control rupiah"
+               placeholder="Masukkan jumlah penarikan"
+               maxlength="16"
+               inputmode="numeric"
+               required>
     </div>
 </div>
 
+<div class="form-actions">
+    <a href="{% url 'simpanan_anggota' anggota.nomor_anggota %}" class="btn-outline">Batal</a>
+    <button type="submit" class="btn-simpan">Tarik</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- MODAL -->
+<div id="saldoModal" class="modal-overlay">
+<div class="modal-box">
+    <div class="modal-header">
+        <i class="ph-warning-circle-bold"></i>
+        <h3>Saldo Tidak Mencukupi</h3>
+    </div>
+    <div class="modal-body">
+        <p>Saldo tersedia : <strong id="modalSaldo"></strong></p>
+        <p>Jumlah penarikan : <strong id="modalTarik"></strong></p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn-modal" onclick="closeModal()">OK</button>
+    </div>
+</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script>
-flatpickr(".datepicker", {
-    dateFormat: "Y-m-d",
-    altInput: true,
-    altFormat: "d F Y",
-    locale: "id",
-    allowInput: true
+ // DATEPICKER
+    flatpickr(".datepicker", {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d F Y",
+        locale: "id"
+    });
+
+const SALDO = {{ saldo|default:0 }};
+
+function formatRupiah(v){
+    return v.replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+
+$('.rupiah').on('input', function(){
+    let raw = this.value.replace(/\./g,'');
+    this.value = formatRupiah(raw);
+});
+
+function openModal(saldo, tarik){
+    $('#modalSaldo').text('Rp ' + saldo.toLocaleString('id-ID'));
+    $('#modalTarik').text('Rp ' + tarik.toLocaleString('id-ID'));
+    $('#saldoModal').addClass('show');
+}
+
+function closeModal(){
+    $('#saldoModal').removeClass('show');
+}
+
+$('form').on('submit', function(e){
+    let tarik = parseInt($('#id_jumlah_penarikan').val().replace(/\./g,'') || 0);
+
+    if(tarik > SALDO){
+        e.preventDefault();
+        openModal(SALDO, tarik);
+        return false;
+    }
+
+    $('#id_jumlah_penarikan').val(tarik);
 });
 </script>
 

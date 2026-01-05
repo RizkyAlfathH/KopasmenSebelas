@@ -264,7 +264,10 @@
       <div class="row">
         <div class="col">
           <label>Saldo {{ simpanan.jenis_simpanan }}:</label>
-          <input type="text" readonly value="Rp. {{ saldo_jenis|floatformat:0 }}">
+          <input type="text"
+            class="rupiah-input"
+            data-value="{{ saldo_jenis|floatformat:0 }}"
+            readonly>
         </div>
       </div>
     </div>
@@ -287,14 +290,14 @@
         <div class="transaction-card" data-tanggal="{{ h.tgl|date:'Y-m-d' }}">
           <div class="transaction-info">
             <strong>{{ h.jenis_trans }}</strong><br>
-            <small>{{ h.tgl|date:"d M Y" }}</small>
+            <small>{{ h.tanggal_transaksi|date:"d M Y" }}</small>
           </div>
           <div class="transaction-actions">
-            <strong>Rp {{ h.jumlah|floatformat:0 }}</strong>
-            <a href="{% url 'detail_transaksi' h.pk %}" class="action-btn action-detail" title="Lihat Detail">
+            <strong class="rupiah-text" data-value="{{ h.nominal|floatformat:0 }}"></strong>
+            <a href="{% url 'detail_transaksi' h.id_history %}" class="action-btn action-detail" title="Lihat Detail">
               <i class="ph-bold ph-eye"></i>
             </a>
-            <a href="{% url 'download_kwitansi' h.tipe h.pk %}" class="action-btn action-download" title="Unduh Kwitansi">
+            <a href="{% url 'download_kwitansi' 'history' h.id_history %}" class="action-btn action-download" title="Unduh Kwitansi">
               <i class="ph-bold ph-download-simple"></i>
             </a>
           </div>
@@ -318,6 +321,24 @@
           locale: "id",
           allowInput: true
       });
+  });
+  function formatRupiah(angka) {
+    if (!angka) return 'Rp 0';
+    return 'Rp ' + Number(angka).toLocaleString('id-ID');
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // untuk text (strong, td, dll)
+    document.querySelectorAll('.rupiah-text').forEach(el => {
+      const value = el.dataset.value;
+      el.textContent = formatRupiah(value);
+    });
+
+    // untuk input readonly
+    document.querySelectorAll('.rupiah-input').forEach(input => {
+      const value = input.dataset.value;
+      input.value = formatRupiah(value);
+    });
   });
   </script>
 </body>

@@ -147,37 +147,29 @@
         </thead>
         <tbody>
           {% for item in data_saldo %}
-          <tr>
-            <td>{{ anggota.nomor_anggota }}</td>
-            <td>{{ anggota.nama }}</td>
-            <td>{{ item.jenis }}</td>
-            <td>Rp {{ item.saldo|floatformat:0 }}</td>
-            <td style="text-align:center;">
-              {% if item.last_simpanan %}
+            {% if item.saldo > 0 %}
+            <tr>
+              <td>{{ anggota.nomor_anggota }}</td>
+              <td>{{ anggota.nama }}</td>
+              <td>{{ item.jenis }}</td>
+              <td class="rupiah-text" data-value="{{ item.saldo|floatformat:0 }}"></td>
+              <td style="text-align:center;">
                 <div class="action-group">
-                  <a href="{% url 'detail_simpanan' item.last_simpanan.id_simpanan %}" class="action-view" title="Detail">
+                  <a href="{% url 'detail_simpanan' item.last_simpanan.id_simpanan %}" class="action-view">
                     <i class="ph-bold ph-eye"></i>
                   </a>
-                  {% if item.saldo > 0 %}
-                    {% if item.jenis_id %}
-                      <a href="{% url 'tambah_penarikan' anggota.nomor_anggota item.jenis_id %}" 
-                         class="action-tarik" title="Tarik Dana" data-type="penarikan" data-name="{{ item.jenis }}">
-                         <i class="ph-bold ph-wallet"></i>
-                      </a>
-                    {% else %}
-                      <span>Jenis Simpanan tidak valid</span>
-                    {% endif %}
-                  {% else %}
-                    <span>Saldo nol</span>
-                  {% endif %}
+                  <a href="{% url 'tambah_penarikan' anggota.nomor_anggota item.jenis_id %}"
+                    class="action-tarik">
+                    <i class="ph-bold ph-wallet"></i>
+                  </a>
                 </div>
-              {% else %}
-                <span>Tidak ada transaksi</span>
-              {% endif %}
-            </td>
-          </tr>
+              </td>
+            </tr>
+            {% endif %}
           {% empty %}
-          <tr><td colspan="5" class="empty-state">Belum ada simpanan</td></tr>
+          <tr>
+            <td colspan="5" class="empty-state">Belum ada simpanan</td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
@@ -186,5 +178,20 @@
         <a href="{% url 'daftar_simpanan' %}" class="btn btn-gold">Kembali</a>
       </div>
   </div>
+
+<script>
+  function formatRupiah(angka) {
+    if (!angka) return 'Rp 0';
+    return 'Rp ' + Number(angka).toLocaleString('id-ID');
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('.rupiah-text').forEach(el => {
+      const value = el.dataset.value;
+      el.textContent = formatRupiah(value);
+    });
+  });
+</script>
+
 </body>
 </html>

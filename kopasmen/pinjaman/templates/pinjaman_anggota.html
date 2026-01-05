@@ -1,3 +1,4 @@
+{% load rupiah %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -13,11 +14,13 @@
             font-family: 'Poppins', sans-serif;
             box-sizing: border-box;
         }
+
         body {
             background: #f5f5f5;
             margin: 0;
             display: flex;
         }
+
         .sidebar {
             width: 280px;
             background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
@@ -26,11 +29,13 @@
             height: 100vh;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }
+
         .main-content {
             margin-left: 280px;
             padding: 30px;
             flex: 1;
         }
+
         .content-card {
             background: white;
             border-radius: 12px;
@@ -38,6 +43,7 @@
             box-shadow: 0 2px 20px rgba(0,0,0,0.08);
             margin-bottom: 30px;
         }
+
         h1, h2 {
             color: #4A2C2A;
             font-weight: 600;
@@ -61,6 +67,7 @@
             gap: 6px;
             margin-bottom: 18px; /* ⬅️ tambahkan jarak di bawah tombol */
         }
+
         .btn-bayar:hover {
             background: #e6c200;
             color: #4A2C2A;
@@ -94,18 +101,55 @@
             border-radius: 0.25rem;
             overflow: hidden;
         }
-        th, td {
+
+        th {
             padding: 10px;
-            text-align: center;
+            text-align: center; /* judul tetap tengah */
             border-bottom: 1px solid #dee2e6;
             vertical-align: middle;
-        }
-        th {
             background: #FFD700;
             color: #4A2C2A;
             font-weight: 500;
         }
+
+        td {
+            padding: 10px;
+            text-align: left;   /* isi tabel rata kiri */
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
+        }
+
+        .td-center {
+            text-align: center !important;
+        }
+
         tr:nth-child(even) { background: #f8f9fa; }
+
+        .badge-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .badge-lunas {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-belum {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-links {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+        }
 
         .action-links a {
             display: inline-flex;
@@ -120,63 +164,86 @@
             margin: 0 2px;
             transition: 0.2s;
         }
+        
         .action-links a:hover { transform: scale(1.1); }
         .action-view { background: #00aeff; }
-        .action-edit { background: #ffa51f; }
-        .action-delete { background: #f31f1f; }
 
         .empty-state { text-align: center; font-style: italic; color: #999; }
 
-        /* Modal */
         #bayarModal {
-            display: none;
             position: fixed;
-            top:0; left:0;
-            width:100%; height:100%;
-            background: rgba(0,0,0,0.4);
-            justify-content:center;
-            align-items:center;
-            z-index:999;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
         }
-        #bayarModal.active { display: flex; opacity: 1; }
+
+        #bayarModal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
         #bayarModal .modal-card {
             background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            min-width: 350px;
-            max-width: 450px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            text-align: center;
+            padding: 26px;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.2);
+            text-align: left;
+            animation: zoomIn 0.25s ease;
         }
+
+        #bayarModal .modal-card .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 18px;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
         #bayarModal h3 {
             margin-top: 0;
             color: #4A2C2A;
             font-weight: 600;
         }
+
         #listPinjaman {
             list-style: none;
             padding: 0;
             margin: 15px 0;
         }
+
         #listPinjaman li {
             margin-bottom: 12px;
         }
+
         #listPinjaman li a {
-            display: block;
-            background: #FFD700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff9d6;
+            border: 1px solid #FFD700;
             color: #4A2C2A;
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 6px;
+            padding: 12px 14px;
+            border-radius: 10px;
             font-weight: 600;
-            transition: 0.2s;
+            transition: 0.2s ease;
+            text-decoration: none;
         }
+
         #listPinjaman li a:hover {
-            background: #e6c200;
+            background: #FFD700;
         }
+
         .close-btn {
             margin-top: 10px;
             background: #FFD700;
@@ -188,6 +255,7 @@
             cursor: pointer;
             transition: 0.2s;
         }
+
         .close-btn:hover {
             background: #e6c200;
         }
@@ -202,13 +270,15 @@
         <div class="content-card">
             <h1>Pinjaman {{ anggota.nama }} ({{ anggota.nomor_anggota }})</h1>
 
-            <button class="btn-bayar" onclick="openBayarModal({{ all_pinjaman_list|safe }})">Bayar</button>
+            <button class="btn-bayar" onclick="openBayarModal({{ all_pinjaman_list|safe }})"><i class="ph-bold ph-credit-card"></i> Bayar</button>
 
             <div id="bayarModal">
                 <div class="modal-card">
                     <h3>Pilih Pinjaman untuk Dibayar</h3>
                     <ul id="listPinjaman"></ul>
-                    <button class="close-btn" onclick="closeBayarModal()">Tutup</button>
+                    <div class="modal-footer">
+                        <button class="close-btn" onclick="closeBayarModal()">Tutup</button>
+                    </div>
                 </div>
             </div>
 
@@ -236,13 +306,20 @@
                                 <tr>
                                     <td>{{ data.tanggal_meminjam|date:"d M Y" }}</td>
                                     <td>Reguler</td>
-                                    <td>Rp. {{ data.pinjaman_reguler_awal|floatformat:"-2" }}</td>
-                                    <td>Rp. {{ data.angsuran_reguler|floatformat:"-2" }}</td>
-                                    <td>{{ data.jasa_persen_reguler|floatformat:"-2" }}%</td>
-                                    <td>Rp. {{ data.jasa_reguler|floatformat:"-2" }}</td>
-                                    <td>Rp. {{ data.total_reguler|floatformat:"-2" }}</td>
-                                    <td>Rp. {{ data.sisa_reguler|floatformat:"-2" }}</td>
-                                    <td>{{ data.status_reguler|default_if_none:"-" }}</td>
+                                    <td>{{ data.pinjaman_reguler_awal|rupiah }}</td>
+                                    <td>{{ data.angsuran_reguler|rupiah }}</td>
+                                    <td class="td-center">{{ data.jasa_persen_reguler|floatformat:"-2" }}%</td>
+                                    <td>{{ data.jasa_reguler|rupiah }}</td>
+                                    <td>{{ data.total_reguler|rupiah }}</td>
+                                    <td>{{ data.sisa_reguler|rupiah }}</td>
+                                    <td class="td-center">
+                                        {% if data.status_reguler == "Lunas" %}
+                                            <span class="badge-status badge-lunas">Lunas</span>
+                                        {% else %}
+                                            <span class="badge-status badge-belum">Belum Lunas</span>
+                                        {% endif %}
+                                    </td>
+
                                     <td class="action-links">
                                         {% if data.pinjaman_reguler_id %}
                                             <a href="{% url 'detail_pinjaman' data.pinjaman_reguler_id %}" class="action-view" title="Detail"><i class="ph-bold ph-eye"></i></a>
@@ -254,13 +331,20 @@
                                 <tr>
                                     <td>{{ data.tanggal_meminjam|date:"d M Y" }}</td>
                                     <td>Khusus</td>
-                                    <td>Rp. {{ data.pinjaman_khusus_awal|floatformat:"-2" }}</td>
-                                    <td>Rp. {{ data.angsuran_khusus|floatformat:"-2" }}</td>
-                                    <td>{{ data.jasa_persen_khusus|floatformat:"-2" }}%</td>
-                                    <td>Rp. {{ data.jasa_khusus|floatformat:"-2" }}</td>
-                                    <td>Rp. {{ data.total_khusus|floatformat:"-2" }}</td>
-                                    <td>Rp. {{ data.sisa_khusus|floatformat:"-2" }}</td>
-                                    <td>{{ data.status_khusus|default_if_none:"-" }}</td>
+                                    <td>{{ data.pinjaman_khusus_awal|rupiah}}</td>
+                                    <td>{{ data.angsuran_khusus|rupiah}}</td>
+                                    <td class="td-center">{{ data.jasa_persen_khusus|floatformat:"-2" }}%</td>
+                                    <td>{{ data.jasa_khusus|rupiah}}</td>
+                                    <td>{{ data.total_khusus|rupiah}}</td>
+                                    <td>{{ data.sisa_khusus|rupiah}}</td>
+                                    <td class="td-center">
+                                        {% if data.status_khusus == "Lunas" %}
+                                            <span class="badge-status badge-lunas">Lunas</span>
+                                        {% else %}
+                                            <span class="badge-status badge-belum">Belum Lunas</span>
+                                        {% endif %}
+                                    </td>
+
                                     <td class="action-links">
                                         {% if data.pinjaman_khusus_id %}
                                             <a href="{% url 'detail_pinjaman' data.pinjaman_khusus_id %}" class="action-view" title="Detail"><i class="ph-bold ph-eye"></i></a>
@@ -272,13 +356,20 @@
                                 <tr>
                                     <td>{{ data.tanggal_meminjam|date:"d M Y" }}</td>
                                     <td>Barang</td>
-                                    <td>Rp. {{ data.pinjaman_barang_awal|floatformat:"-2" }}</td>
-                                    <td>Rp. {{ data.angsuran_barang|floatformat:"-2" }}</td>
-                                    <td>{{ data.jasa_persen_barang|floatformat:"-2" }}%</td>
-                                    <td>Rp. {{ data.jasa_barang|floatformat:"-2" }}</td>
-                                    <td>Rp. {{ data.total_barang|floatformat:"-2" }}</td>
-                                    <td>Rp. {{ data.sisa_barang|floatformat:"-2" }}</td>
-                                    <td>{{ data.status_barang|default_if_none:"-" }}</td>
+                                    <td>{{ data.pinjaman_barang_awal|rupiah}}</td>
+                                    <td>{{ data.angsuran_barang|rupiah}}</td>
+                                    <td class="td-center">{{ data.jasa_persen_barang|floatformat:"-2" }}%</td>
+                                    <td>{{ data.jasa_barang|rupiah}}</td>
+                                    <td>{{ data.total_barang|rupiah}}</td>
+                                    <td>{{ data.sisa_barang|rupiah}}</td>
+                                    <td class="td-center">
+                                        {% if data.status_barang == "Lunas" %}
+                                            <span class="badge-status badge-lunas">Lunas</span>
+                                        {% else %}
+                                            <span class="badge-status badge-belum">Belum Lunas</span>
+                                        {% endif %}
+                                    </td>
+
                                     <td class="action-links">
                                         {% if data.pinjaman_barang_id %}
                                             <a href="{% url 'detail_pinjaman' data.pinjaman_barang_id %}" class="action-view" title="Detail"><i class="ph-bold ph-eye"></i></a>
@@ -312,12 +403,19 @@
                 <tbody>
                     {% for pin in riwayat_pinjaman %}
                         <tr>
-                            <td>{{ pin.tanggal_meminjam|date:"d M Y" }}</td>
-                            <td>{{ pin.jenis }}</td>
-                            <td>Rp. {{ pin.jumlah_pinjaman|floatformat:"-2" }}</td>
-                            <td>Rp. {{ pin.angsuran|floatformat:"-2" }}</td>
-                            <td>{{ pin.jasa_persen|floatformat:"-2" }}%</td>
-                            <td>{{ pin.status }}</td>
+                            <td class="td-center">{{ pin.tanggal_meminjam|date:"d M Y" }}</td>
+                            <td class="td-center">{{ pin.jenis }}</td>
+                            <td class="td-center">{{ pin.jumlah_pinjaman|rupiah}}</td>
+                            <td class="td-center">{{ pin.angsuran|rupiah}}</td>
+                            <td class="td-center">{{ pin.jasa_persen|floatformat:"-2" }}%</td>
+                            <td class="td-center">
+                                {% if pin.status == "Lunas" %}
+                                    <span class="badge-status badge-lunas">Lunas</span>
+                                {% else %}
+                                    <span class="badge-status badge-belum">{{ pin.status }}</span>
+                                {% endif %}
+                            </td>
+
                             <td class="action-links">
                                 <a href="{% url 'detail_pinjaman' pin.id %}" class="action-view" title="Detail"><i class="ph-bold ph-eye"></i></a>
                             </td>

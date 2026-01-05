@@ -77,3 +77,41 @@ class Penarikan(models.Model):
 
     def __str__(self):
         return f"{self.jenis_simpanan} - {self.anggota.nama}"
+
+class HistoryTabungan(models.Model):
+    id_history = models.BigAutoField(primary_key=True)
+    tanggal = models.DateField()
+
+    JENIS_TRANSAKSI = [
+        ("SETOR", "Setor"),
+        ("TARIK", "Tarik"),
+        ("KOREKSI", "Koreksi"),
+    ]
+
+    jenis_transaksi = models.CharField(
+        max_length=10,
+        choices=JENIS_TRANSAKSI
+    )
+
+    jumlah = models.DecimalField(max_digits=18, decimal_places=2)
+
+    anggota = models.ForeignKey(
+        Anggota,
+        on_delete=models.CASCADE,
+        db_column="anggota_id"
+    )
+
+    jenis_simpanan = models.ForeignKey(
+        JenisSimpanan,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column="jenis_simpanan_id"
+    )
+
+    class Meta:
+        db_table = "history_tabungan"
+        managed = False   # ⬅️ PENTING: karena tabel sudah ada
+
+    def __str__(self):
+        return f"{self.anggota} - {self.jenis_transaksi} {self.jumlah}"

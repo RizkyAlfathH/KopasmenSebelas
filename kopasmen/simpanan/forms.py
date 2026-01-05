@@ -6,7 +6,14 @@ import datetime
 class SimpananForm(forms.ModelForm):
     class Meta:
         model = Simpanan
-        fields = ['admin', 'tanggal_menyimpan', 'anggota', 'jenis_simpanan', 'jumlah_menyimpan', 'dana_sosial']
+        fields = [
+            'admin',
+            'tanggal_menyimpan',
+            'anggota',
+            'jenis_simpanan',
+            'jumlah_menyimpan',
+            'dana_sosial'
+        ]
         widgets = {
             'anggota': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -19,80 +26,119 @@ class SimpananForm(forms.ModelForm):
                 format='%Y-%m-%d'
             ),
             'jenis_simpanan': forms.Select(attrs={'class': 'form-control'}),
-            'jumlah_menyimpan': forms.NumberInput(attrs={'class': 'form-control'}),
-            'dana_sosial': forms.NumberInput(attrs={'class': 'form-control', 'value': '0'}),
+            'jumlah_menyimpan': forms.TextInput(attrs={'class': 'form-control'}),
+            'dana_sosial': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # kalau tambah baru (belum ada instance) → isi default dengan tanggal hari ini
+
+        # ===============================
+        # DANA SOSIAL TIDAK WAJIB DEFAULT
+        # ===============================
+        self.fields['dana_sosial'].required = False
+
+        # default tanggal hari ini
         if not self.instance.pk:
             self.fields['tanggal_menyimpan'].initial = datetime.date.today()
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        anggota = cleaned_data.get('anggota')
+        jenis = cleaned_data.get('jenis_simpanan')
+        tanggal = cleaned_data.get('tanggal_menyimpan')
+        dana_sosial = cleaned_data.get('dana_sosial')
+
+        if not anggota or not jenis or not tanggal:
+            return cleaned_data
+
+        # SIMPANAN WAJIB = PK 2
+        if jenis.pk == 2:
+            bulan = tanggal.month
+            tahun = tanggal.year
+
+            sudah_bayar = Simpanan.objects.filter(
+                anggota=anggota,
+                jenis_simpanan_id=2,
+                tanggal_menyimpan__month=bulan,
+                tanggal_menyimpan__year=tahun
+            ).exists()
+
+            if not sudah_bayar and not dana_sosial:
+                raise forms.ValidationError(
+                    "Dana sosial wajib diisi karena anggota belum membayar simpanan wajib bulan ini."
+                )
+
+        return cleaned_data
+
+
 
 class EditSimpananForm(forms.Form):
-    anggota = forms.ModelChoiceField(
-        queryset=Anggota.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-control', 'readonly': 'readonly'})
-    )
-    admin = forms.ModelChoiceField(
-        queryset=Admin.objects.none(),
-        widget=forms.HiddenInput()
-    )
     tanggal_menyimpan = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'text', 'class': 'form-control datepicker'})
-    )
-    simpanan_pokok = forms.IntegerField(
-        required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'step': 1})
-    )
-    simpanan_wajib = forms.IntegerField(
-        required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'step': 1})
-    )
-    simpanan_sukarela = forms.IntegerField(
-        required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'step': 1})
+        widget=forms.DateInput(attrs={
+            'type': 'text',
+            'class': 'form-control datepicker',
+            'autocomplete': 'off'
+        })
     )
 
-    def __init__(self, *args, **kwargs):
-        admin_login = kwargs.pop('admin_login', None)
-        super().__init__(*args, **kwargs)
-        if admin_login:
-            self.fields['admin'].initial = admin_login
+    simpanan_pokok = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+
+    simpanan_wajib = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+
+    simpanan_sukarela = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
 
 
 class PenarikanForm(forms.ModelForm):
     class Meta:
         model = Penarikan
-        fields = ['anggota', 'jenis_simpanan', 'jumlah_penarikan', 'tanggal_penarikan']
+        fields = ['tanggal_penarikan', 'jumlah_penarikan']
         widgets = {
-            'tanggal_penarikan': forms.DateInput(
-                attrs={
-                    'type': 'date',
-                    'placeholder': 'Pilih tanggal penarikan'
-                }
-            ),
+            'tanggal_penarikan': forms.DateInput(attrs={'type': 'date'}),
+            'jumlah_penarikan': forms.NumberInput(attrs={'placeholder': 'Masukkan jumlah'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        self.anggota = kwargs.pop("anggota", None)
+        self.jenis_simpanan = kwargs.pop("jenis_simpanan", None)
+        super().__init__(*args, **kwargs)
+
+    def clean_jumlah_penarikan(self):
+        jumlah = self.cleaned_data.get("jumlah_penarikan")
+
+        if jumlah <= 0:
+            raise forms.ValidationError("Jumlah penarikan tidak boleh kurang dari 1.")
+
+        return jumlah
 
     def clean(self):
         cleaned_data = super().clean()
-        anggota = cleaned_data.get("anggota")
-        jumlah_penarikan = cleaned_data.get("jumlah_penarikan")
 
-        if anggota and jumlah_penarikan:
-            # Hitung total simpanan anggota
-            total_simpanan = Simpanan.objects.filter(anggota=anggota).aggregate(
-                total=Sum("jumlah_menyimpan")
-            )["total"] or 0
+        if not (self.anggota and self.jenis_simpanan):
+            return cleaned_data
 
-            # Hitung total penarikan sebelumnya
-            total_penarikan = Penarikan.objects.filter(anggota=anggota).aggregate(
-                total=Sum("jumlah_penarikan")
-            )["total"] or 0
+        jumlah = cleaned_data.get("jumlah_penarikan")
 
-            sisa_saldo = total_simpanan - total_penarikan
+        simpanan = Simpanan.objects.filter(
+            anggota=self.anggota,
+            jenis_simpanan=self.jenis_simpanan
+        ).first()
 
-            if jumlah_penarikan > sisa_saldo:
-                raise forms.ValidationError(
-                    f"Saldo tidak mencukupi. Sisa saldo anggota hanya Rp {sisa_saldo:,.0f}"
-                )
+        saldo = simpanan.jumlah_menyimpan if simpanan else 0
+
+        if jumlah and jumlah > saldo:
+            raise forms.ValidationError(
+                f"Saldo tidak cukup. Saldo Simpanan hanya Rp {saldo:,.0f}."
+            )
 
         return cleaned_data

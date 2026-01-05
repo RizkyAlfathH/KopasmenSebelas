@@ -8,152 +8,154 @@
 <!-- Font & Icon -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/phosphor-icons"></script>
+
+<!-- Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
+<!-- Flatpickr -->
 <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
 
 <style>
-    * {
-        font-family: 'Poppins', sans-serif;
-        box-sizing: border-box;
-    }
+* {
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
 
-    body {
-        background: #f5f5f5;
-        margin: 0;
-        display: flex;
-    }
+body {
+    background: #f5f5f5;
+    margin: 0;
+    display: flex;
+}
 
-    /* Sidebar */
-    .sidebar {
-        width: 280px;
-        background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
-        padding: 20px 0;
-        position: fixed;
-        height: 100vh;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    }
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #FFD700 0%, #FFF8DC 100%);
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
 
-    /* Main content */
-    .main-content {
-        margin-left: 280px;
-        padding: 30px;
-        flex: 1;
-    }
+/* Main content */
+.main-content {
+    margin-left: 280px;
+    padding: 30px;
+    flex: 1;
+}
 
-    .form-card {
-        background: white;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-    }
+.form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+}
 
-    h1 {
-        margin-bottom: 25px;
-        color: #4A2C2A;
-    }
+h1 {
+    margin-bottom: 25px;
+    color: #4A2C2A;
+}
 
-    /* === GRID 2 KOLOM === */
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 25px 40px;
-    }
+/* GRID */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px 40px;
+}
 
-    label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 6px;
-        color: #4A2C2A;
-        font-size: 14px;
-    }
+.form-grid .form-actions {
+    justify-content: flex-end;
+    grid-column: span 2;
+}
 
-    input.form-control, select.form-control {
-        width: 100%;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 14px;
-        padding: 8px 12px;
-        transition: 0.2s;
-    }
+label {
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #4A2C2A;
+    font-size: 14px;
+}
 
-    input:focus, select:focus {
-        border-color: #FFD700;
-        box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
-        outline: none;
-    }
+.form-control,
+.select2-container--default .select2-selection--single {
+    width: 100%;
+    border-radius: 8px;
+    font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+}
 
-    select.form-control {
-        appearance: none;
-        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='gray' class='bi bi-caret-down-fill' viewBox='0 0 16 16'><path d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.658l-4.796 5.482a1 1 0 0 1-1.506 0z'/></svg>") no-repeat right 12px center;
-        background-color: #fff;
-        padding-right: 35px;
-    }
+/* Select2 rapi */
+.select2-selection--single {
+    height: 40px !important;
+    display: flex;
+    align-items: center;
+}
 
-    .form-actions {
-        margin-top: 35px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
+.select2-selection__arrow {
+    top: 6px !important;
+}
 
-    .btn-simpan {
-        background: #FFD700;
-        color: #4A2C2A;
-        font-weight: 600;
-        padding: 6px 14px;
-        border-radius: 6px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 13px;
-        transition: 0.2s;
-        border: none;
-    }
+/* Button */
+.form-actions {
+    margin-top: 35px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
 
-    .btn-simpan:hover { background: #e6c200; }
+.btn-simpan {
+    background: #FFD700;
+    color: #4A2C2A;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+}
 
-    .btn-outline {
-        background: transparent;
-        border: 1px solid #ccc;
-        color: #4A2C2A;
-        font-weight: 500;
-        border-radius: 6px;
-        padding: 6px 14px;
-        font-size: 13px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: 0.2s ease;
-        text-decoration: none;
-    }
+.btn-outline {
+    background: transparent;
+    border: 1px solid #ccc;
+    color: #4A2C2A;
+    border-radius: 6px;
+    padding: 6px 14px;
+    text-decoration: none;
+}
 
-    .btn-outline:hover { background: #fff9d4; }
+/* ===============================
+   Bottom row (Dana Sosial + Button)
+   =============================== */
+.bottom-row {
+    grid-column: span 2; /* full width grid */
 
-    .autocomplete-wrapper { position: relative; }
-    #anggota-suggestions {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        background: #fff;
-        max-height: 180px;
-        overflow-y: auto;
-        list-style: none;
-        padding: 0;
-        margin: 2px 0 0 0;
-        z-index: 9999;
-        display: none;
-    }
-    #anggota-suggestions li {
-        padding: 8px 10px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    #anggota-suggestions li:hover { background: #f5f5f5; }
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+}
 
-    /* Flatpickr (tampilan mirip AdminLTE) */
+/* Dana sosial tidak full */
+.dana-sosial-box {
+    max-width: 548px;
+    width: 100%;
+}
+
+/* Biar label rapi */
+.dana-sosial-box label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Button tetap kanan */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+
+/* Flatpickr (tampilan mirip AdminLTE) */
     .flatpickr-calendar {
         border-radius: 10px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.15);
@@ -183,28 +185,22 @@
     <div class="form-card">
         <h1>Tambah Simpanan</h1>
 
-        <form method="post" id="simpanan-form">
+        <form method="post">
             {% csrf_token %}
 
             <div class="form-grid">
-                <!-- Baris 1 -->
-                <div class="autocomplete-wrapper">
-                    <label for="anggota-autocomplete">Nomor Anggota</label>
-                    <input type="text" id="anggota-autocomplete" class="form-control" placeholder="Ketik nama atau nomor anggota" autocomplete="off">
-                    <input type="hidden" name="anggota" id="anggota-id">    
-                    <ul id="anggota-suggestions"></ul>
-                </div>
 
+                <!-- ANGGOTA (SELECT2) -->
+                <div>
+                    <label for="id_anggota">Nama Anggota</label>
+                    <select id="id_anggota" name="anggota" class="form-control"></select>
+                </div>
 
                 <div>
                     <label for="id_tanggal_menyimpan">Tanggal Menyimpan</label>
-                    <div style="position: relative;">
-                        {{ form.tanggal_menyimpan|add_class:"form-control datepicker"|attr:"placeholder:Pilih tanggal menyimpan"|attr:"autocomplete:off" }}
-                        <i class="ph-calendar" style="position:absolute;right:12px;top:10px;color:#888;"></i>
-                    </div>
+                    {{ form.tanggal_menyimpan|add_class:"form-control datepicker"|attr:"autocomplete:off" }}
                 </div>
 
-                <!-- Baris 2 -->
                 <div>
                     <label for="id_jenis_simpanan">Jenis Simpanan</label>
                     {{ form.jenis_simpanan|add_class:"form-control" }}
@@ -212,85 +208,134 @@
 
                 <div>
                     <label for="id_jumlah_menyimpan">Jumlah Menyimpan</label>
-                    {{ form.jumlah_menyimpan|add_class:"form-control"|attr:"placeholder:Masukkan jumlah simpanan" }}
+                        <input type="text"
+                            id="id_jumlah_menyimpan"
+                            name="jumlah_menyimpan"
+                            class="form-control rupiah"
+                            placeholder="Masukkan jumlah menyimpan"
+                            maxlength="16"
+                            required>
                 </div>
-            </div>
 
-            <div id="field-dana-sosial" style="margin-top:25px; display:none;">
-                <label for="id_dana_sosial">Dana Sosial</label>
-                <input type="number" name="dana_sosial" id="id_dana_sosial" class="form-control" min="0" value="0">
-            </div>
 
-            <div class="form-actions">
-                <a href="{% url 'daftar_simpanan' %}" class="btn-outline">Batal</a>
-                <button type="submit" class="btn-simpan">
-                    <i class="ph-bold ph-plus"></i> Tambah
-                </button>
+                <!-- DANA SOSIAL -->
+                <div id="field-dana-sosial" class="dana-sosial-box" style="display:none;">
+                    <label for="id_dana_sosial">Dana Sosial</label>
+                    <input type="text"
+                        id="id_dana_sosial"
+                        name="dana_sosial"
+                        class="form-control rupiah"
+                        placeholder="Masukkan dana sosial"
+                        maxlength="16">
+                </div>
+
+                <!-- BUTTON -->
+                <div class="form-actions">
+                    <a href="{% url 'daftar_simpanan' %}" class="btn-outline">Batal</a>
+                    <button type="submit" class="btn-simpan">
+                        <i class="ph-bold ph-plus"></i> Tambah
+                    </button>
+                </div>
+
+
             </div>
         </form>
     </div>
 </div>
 
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const input = document.getElementById("anggota-autocomplete");
-    const suggestionsBox = document.getElementById("anggota-suggestions");
-    const anggotaId = document.getElementById("anggota-id");
-    const form = document.getElementById("simpanan-form");
+$(document).ready(function () {
 
-    input.addEventListener("input", function () {
-        const query = this.value.trim();
-        if (query.length < 1) {
-            suggestionsBox.innerHTML = "";
-            suggestionsBox.style.display = "none";
-            return;
-        }
-        fetch(`/simpanan/autocomplete/anggota/?term=${query}`)
-            .then(response => response.json())
-            .then(data => {
-                suggestionsBox.innerHTML = "";
-                if (data.length > 0) {
-                    suggestionsBox.style.display = "block";
-                    data.forEach(item => {
-                        const li = document.createElement("li");
-                        li.textContent = `${item.nomor_anggota} - ${item.nama}`;
-                        li.addEventListener("click", function () {
-                            input.value = `${item.nomor_anggota} - ${item.nama}`;
-                            anggotaId.value = item.id;
-                            suggestionsBox.innerHTML = "";
-                            suggestionsBox.style.display = "none";
-                        });
-                        suggestionsBox.appendChild(li);
-                    });
-                } else {
-                    suggestionsBox.style.display = "none";
-                }
-            });
+    // SELECT2 ANGGOTA (SAMA KAYAK PINJAMAN)
+    $('#id_anggota').select2({
+        placeholder: "Cari anggota...",
+        ajax: {
+            url: "{% url 'autocomplete_anggota' %}",
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return { q: params.term };
+            },
+            processResults: function (data) {
+                return { results: data.results };
+            }
+        },
+        minimumInputLength: 1,
+        width: '100%'
     });
 
-    document.addEventListener("click", function (e) {
-        if (!input.contains(e.target) && !suggestionsBox.contains(e.target)) {
-            suggestionsBox.style.display = "none";
-        }
-    });
-
-    form.addEventListener("submit", function (e) {
-        if (!anggotaId.value) {
-            e.preventDefault();
-            alert("⚠️ Harap pilih anggota dari daftar autocomplete!");
-            input.focus();
-        }
-    });
-
+    // DATEPICKER
     flatpickr(".datepicker", {
         dateFormat: "Y-m-d",
         altInput: true,
         altFormat: "d F Y",
-        locale: "id",
-        allowInput: true
+        locale: "id"
     });
+
+
+    // ===============================
+    // CEK DANA SOSIAL
+    // ===============================
+    function cekDanaSosial() {
+        const anggotaId = $('#id_anggota').val();
+        const jenisText = $('#id_jenis_simpanan option:selected').text().toLowerCase();
+        const tanggal = $('#id_tanggal_menyimpan').val(); // YYYY-MM-DD
+
+        // reset
+        $('#field-dana-sosial').hide();
+
+        if (!anggotaId || !tanggal) return;
+
+        // hanya untuk simpanan WAJIB
+        if (!jenisText.includes('wajib')) return;
+
+        // build URL sesuai urls.py
+        const url = `/simpanan/cek-dana-sosial/${anggotaId}/${tanggal}/`;
+
+        $.getJSON(url, function (res) {
+            if (res.sudah_bayar === false) {
+                $('#field-dana-sosial').slideDown();
+            }
+        }).fail(function () {
+            console.error('Gagal cek dana sosial');
+        });
+    }
+
+    // ===============================
+    // EVENT
+    // ===============================
+    $('#id_anggota').on('change', cekDanaSosial);
+    $('#id_jenis_simpanan').on('change', cekDanaSosial);
+    $('#id_tanggal_menyimpan').on('change', cekDanaSosial);
+
+    $(document).ready(function () {
+
+    function formatRupiah(value) {
+        value = value.replace(/\D/g, '');
+        if (value.length > 16) value = value.slice(0, 16);
+        return new Intl.NumberFormat('id-ID').format(value);
+    }
+
+    $('.rupiah').on('input', function () {
+        this.value = formatRupiah(this.value);
+    });
+
+    // Bersihkan sebelum submit
+    $('form').on('submit', function () {
+        $('.rupiah').each(function () {
+            this.value = this.value.replace(/\./g, '').replace(/,/g, '');
+        });
+    });
+
+});
 });
 </script>
+
+
 </body>
 </html>

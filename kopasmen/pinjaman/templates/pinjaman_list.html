@@ -1,3 +1,4 @@
+{% load rupiah %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -266,10 +267,10 @@
                 <tr>
                     <td>{{ anggota.nomor_anggota }}</td>
                     <td>{{ anggota.nama }}</td>
-                    <td>{{ anggota.Reguler|floatformat:"0" }}</td>
-                    <td>{{ anggota.Khusus|floatformat:"0" }}</td>
-                    <td>{{ anggota.Barang|floatformat:"0" }}</td>
-                    <td><strong>{{ anggota.total|floatformat:"0" }}</strong></td>
+                    <td>{{ anggota.Reguler|rupiah }}</td>
+                    <td>{{ anggota.Khusus|rupiah }}</td>
+                    <td>{{ anggota.Barang|rupiah }}</td>
+                    <td><strong>{{ anggota.total|rupiah }}</strong></td>
                     <td style="text-align:center;">
                         <div class="action-links">
                             <a href="{% url 'pinjaman_anggota_detail' anggota.nomor_anggota %}" class="action-view" title="Lihat"><i class="ph-bold ph-eye"></i></a>
